@@ -34,20 +34,6 @@ struct AlbumEmptyView: View {
 
 struct AlbumEmptyView_Previews: PreviewProvider {
     static var previews: some View {
-        Group {
-            AlbumEmptyView()
-            AlbumEmptyView()
-                .previewInterfaceOrientation(.landscapeRight)
-            AlbumEmptyView()
-                .preferredColorScheme(.dark)
-                .accentColor(.pink)
-            AlbumEmptyView()
-                .previewDevice("iPad mini (5th generation)")
-            NavigationView {
-                NavigationLink(destination: AlbumEmptyView(), label: {
-                    Text("Open AlbumEmptyView")
-                })
-            }
-        }
+        AlbumEmptyView()
     }
 }

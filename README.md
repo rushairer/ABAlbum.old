@@ -1,3 +1,3 @@
 # ABAlbum
 
-A description of this package.
+Customized album and camera interface with SwiftUI.
