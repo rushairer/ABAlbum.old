@@ -7,9 +7,7 @@
 
 import SwiftUI
 
-struct AlbumEmptyView: View {
-    @Environment(\.dismiss) var dismiss
-    
+struct AlbumEmptyView: View {    
     var body: some View {
         VStack(spacing: 30) {
             Image(systemName: "photo.fill.on.rectangle.fill")
@@ -24,10 +22,6 @@ struct AlbumEmptyView: View {
             Text("You can take photos using the camera.")
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
-            Button("Go back", action: dismiss.callAsFunction)
-                .buttonStyle(.bordered)
-                .tint(.accentColor)
-                .controlSize(.small)
         }
     }
 }

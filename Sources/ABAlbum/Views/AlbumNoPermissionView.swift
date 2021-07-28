@@ -8,7 +8,6 @@
 import SwiftUI
 
 struct AlbumNoPermissionView: View {
-    @Environment(\.dismiss) var dismiss
     @Environment(\.openURL) var openURL
     
     private var appName: String {
@@ -27,17 +26,12 @@ struct AlbumNoPermissionView: View {
             Text("No access to photos. Go to system setting and allow \(appName) to access all photos in album.")
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
-            VStack(spacing: 20) {
-                Button("Go to system settings") {
-                    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
-                    openURL(url)
-                }
-                .buttonStyle(.borderedProminent)
-                Button("Go back", action: dismiss.callAsFunction)
-                    .buttonStyle(.bordered)
+            Button("Go to system settings") {
+                guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                openURL(url)
             }
+            .buttonStyle(.bordered)
             .tint(.accentColor)
-            .controlSize(.small)
         }
     }
 }
