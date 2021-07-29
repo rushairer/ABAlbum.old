@@ -1,0 +1,14 @@
+@Tutorials(name: "ABAlbum") {
+    @Intro(title: "ABAlbum的故事") {
+        从零开始，记录ABAlbum的开发过程。
+        会不定期的更新，慢慢来，让我们一起成长进步吧。
+        @Image(source: background-image.jpg, alt: "")
+    }
+    
+    @Chapter(name: "第一次打开相册") {
+        @Image(source: screenshot_01_01.png, alt: "")
+    
+        我希望用户启动相册程序后，先选择进入哪个“相册”。
+        @TutorialReference(tutorial: "doc:Create-Album-Selector-View")
+    }
+}

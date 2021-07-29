@@ -1,0 +1,38 @@
+@Tutorial(time: 30) {
+    @Intro(title: "创建选择“相册”的页面") {
+        选择“相册”的页面，我们给它起个名字“AlbumSelectorGridView”，然后一步步展开吧。
+        
+        @Image(source: background-image.jpg, alt: "")
+    }
+    
+    @Section(title: "每个相册对应一个Cell视图") {
+        @ContentAndMedia {
+            通过分析学习系统的Photos应用，我们可以看到，选择“相册”的页面是一个网格视图，由很多Cell视图组成。
+            
+            那么接下来，我们先用SwiftUI实现Cell视图吧。
+            @Image(source: screenshot_01_01.png, alt: "")
+        }
+        
+        @Steps {
+            @Step {
+                创建一个新的SwiftUI视图文件，并将其命名为：“AlbumSelectorGridCellView.swift”。
+                
+                @Image(source: screenshot_01_02.png, alt: "")
+            }
+            @Step {
+                图片做背景底图，把标题和相册内照片数量的文本框放底部对齐。VShack 和 HStack 可以用 Spacer 填充空白部分，把视图“撑起来”。 
+                
+                @Code(name: "AlbumSelectorGridCellView.swift", file: 01-create-album-selector-view-01-01)
+            } 
+            @Step {
+                设置变量和默认值。 加个边距和模糊背景效果。运行预览后，效果如图所示。
+                
+                _相册示例照片来自：https://unsplash.com/photos/Yn0l7uwBrpw_
+                
+                @Code(name: "AlbumSelectorGridCellView.swift", file: 01-create-album-selector-view-01-02) {
+                    @Image(source: screenshot_01_03.png, alt: "")
+                }
+            }
+        }
+    }
+}
