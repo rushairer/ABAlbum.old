@@ -1,6 +1,6 @@
 //
 //  CameraPage.swift
-//  CameraPage
+//  ABAlbum
 //
 //  Created by Abenx on 2021/7/27.
 //

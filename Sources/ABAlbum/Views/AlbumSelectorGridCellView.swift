@@ -1,6 +1,6 @@
 //
 //  AlbumSelectorGridCellView.swift
-//  AlbumSelectorGridCellView
+//  ABAlbum
 //
 //  Created by Abenx on 2021/7/29.
 //
@@ -26,6 +26,7 @@ struct AlbumSelectorGridCellView: View {
         .background(
             image ?? Image("photo_demo", bundle: .module)
         )
+        .clipped()
     }
 }
 

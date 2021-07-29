@@ -1,6 +1,6 @@
 //
 //  AlbumNoPermissionView.swift
-//  AlbumNoPermissionView
+//  ABAlbum
 //
 //  Created by Abenx on 2021/7/28.
 //
@@ -26,12 +26,14 @@ struct AlbumNoPermissionView: View {
             Text("No access to photos. Go to system setting and allow \(appName) to access all photos in album.")
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
+            #if os(iOS)
             Button("Go to system settings") {
                 guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
                 openURL(url)
             }
             .buttonStyle(.bordered)
             .tint(.accentColor)
+            #endif
         }
     }
 }

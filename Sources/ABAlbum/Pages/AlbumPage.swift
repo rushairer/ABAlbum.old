@@ -1,6 +1,6 @@
 //
 //  AlbumPage.swift
-//  AlbumPage
+//  ABAlbum
 //
 //  Created by Abenx on 2021/7/27.
 //
@@ -24,7 +24,7 @@ public struct AlbumPage: View {
         AlbumSelectorGridView()
             .overlay(albumNoPermissionView)
             .task {
-                showsAlbumNoPermissionView = await !AlbumService.shared.hasAlbumPermission()
+                showsAlbumNoPermissionView = await !AlbumService.shared.hasAlbumPermission
             }
     }
 }
