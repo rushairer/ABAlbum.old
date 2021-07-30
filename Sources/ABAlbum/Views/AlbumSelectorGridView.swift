@@ -10,7 +10,8 @@ import Photos
 
 struct AlbumSelectorGridView: View {
     
-    @State var allAssetCollections: [PHAssetCollection] = []
+    @State private var allAssetCollections: [PHAssetCollection] = []
+    @State private var coordinator: Coordinator?
     
     private let maxColumn: CGFloat = 2
     private let gridSpacing: CGFloat = 8
@@ -29,6 +30,14 @@ struct AlbumSelectorGridView: View {
     var body: some View {
         func internalView(geometry: GeometryProxy) -> some View {
             let width = gridWidth(screenSize: geometry.size)
+            let scale = UIScreen.main.scale
+            let size = CGSize(width: width, height: width)
+            let thumbnailSize = CGSize(width: width * scale, height: width * scale)
+            let requestOptions = PHImageRequestOptions()
+            requestOptions.deliveryMode = .opportunistic
+            requestOptions.isSynchronous = false
+            requestOptions.resizeMode = .fast
+            requestOptions.isNetworkAccessAllowed = true
             
             return ScrollView(.vertical) {
                 LazyVGrid(columns: [
@@ -36,23 +45,63 @@ struct AlbumSelectorGridView: View {
                                        maximum: width),
                              spacing: gridSpacing)
                 ]) {
-                    ForEach(allAssetCollections, id: \.localIdentifier) { asset in
-                        NavigationLink(destination: AlbumGridView(album: asset)) {
-                            AlbumSelectorGridCellView(title: asset.localizedTitle, count: asset.assetsResult?.count)
-                                .frame(width: width, height: width)
+                    ForEach(allAssetCollections, id: \.localIdentifier) { album in
+                        NavigationLink(destination: AlbumGridView(album: album)) {
+                            if album.assetsResult?.firstObject != nil {
+                                AlbumSelectorGridCellView(asset: album.assetsResult!.firstObject!, size: size, thumbnailSize: thumbnailSize, title: album.localizedTitle, count: album.assetsResult?.count)
+                                    .frame(width: width, height: width)
+                            }
                         }
                         .accentColor(Color(uiColor: .label))
                     }
                 }
-                .onAppear {
-                    allAssetCollections = AlbumService.shared.allAssetCollections
-                }
             }
             .overlay(AlbumEmptyView().opacity(allAssetCollections.count > 0 ? 0 : 1))
             .navigationTitle("Albums")
+            .onAppear {
+                requestAssetCollections()
+                registerChangeObserver()
+            }
+            .onDisappear {
+                unregisterChangeObserver()
+            }
         }
         
         return GeometryReader(content: internalView(geometry:))
+    }
+    
+    func registerChangeObserver() {
+        coordinator = self.makeCoordinator()
+        PHPhotoLibrary.shared().register(coordinator!)
+    }
+    
+    func unregisterChangeObserver() {
+        PHPhotoLibrary.shared().unregisterChangeObserver(coordinator!)
+    }
+    
+    func requestAssetCollections() {
+        allAssetCollections = AlbumService.shared.allAssetCollections
+    }
+    
+    func refreshAssetCollections() {
+        allAssetCollections = []
+        requestAssetCollections()
+    }
+    
+    func makeCoordinator() -> Coordinator {
+        Coordinator(self)
+    }
+    
+    class Coordinator: NSObject, PHPhotoLibraryChangeObserver {
+        var parent: AlbumSelectorGridView
+        
+        init(_ parentView: AlbumSelectorGridView) {
+            parent = parentView
+        }
+        
+        func photoLibraryDidChange(_ changeInstance: PHChange) {
+            parent.refreshAssetCollections()
+        }
     }
 }
 

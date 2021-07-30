@@ -2,3 +2,6 @@
 `2021-07-30`
 ### Added
     - Add AlbumGridView.
+    - Add PHPhotoLibraryChangeObserver for AlbumSelectorGridView.
+### Changed
+    - Change AlbumSelectorGridView UI.
