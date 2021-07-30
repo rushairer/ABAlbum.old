@@ -14,9 +14,18 @@ struct AlbumService {
     
     static let imageManager = PHCachingImageManager()
     
+    var authorizationStatus: PHAuthorizationStatus {
+        get {
+            return PHPhotoLibrary.authorizationStatus(for: .readWrite)
+        }
+    }
+    
     var hasAlbumPermission: Bool {
         get async {
-            let status: PHAuthorizationStatus = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+            var status: PHAuthorizationStatus = authorizationStatus
+            if status == .notDetermined {
+                status = await PHPhotoLibrary.requestAuthorization(for: .readWrite)
+            }
             return status == .authorized || status == .limited
         }
     }
@@ -110,7 +119,6 @@ struct AlbumService {
                         switch terminal {
                         case .cancelled:
                             let requestIDKey = info[PHImageResultRequestIDKey] as! PHImageRequestID
-                            print(requestIDKey)
                             PHCachingImageManager.default().cancelImageRequest(requestIDKey)
                         default: break
                         }
