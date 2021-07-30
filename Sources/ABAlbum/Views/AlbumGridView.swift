@@ -20,6 +20,30 @@ struct AlbumGridView: View {
         return floor((min(screenSize.width, screenSize.height) - gridSpacing * (maxColumn + 1)) / maxColumn)
     }
     
+    struct NavigationLinkCell: View {
+        var asset: PHAsset
+        var size: CGSize
+        var thumbnailSize: CGSize
+        var requestOptions: PHImageRequestOptions?
+        
+        var body: some View {
+            NavigationLink(destination: Text(asset.localIdentifier)) {
+                AlbumGridCellView(asset: asset, size: size, thumbnailSize: thumbnailSize, requestOptions: requestOptions)
+                    .id(asset.localIdentifier)
+                    .onAppear {
+                        DispatchQueue.global(qos: .userInteractive).async {
+                            AlbumService.shared.startCachingImages(for: [asset], size: thumbnailSize, requestOptions: requestOptions)
+                        }
+                    }
+                    .onDisappear {
+                        DispatchQueue.global(qos: .userInteractive).async {
+                            AlbumService.shared.stopCachingImages(for: [asset], size: thumbnailSize, requestOptions: requestOptions)
+                        }
+                    }
+            }
+        }
+    }
+    
     var body: some View {
         func internalView(geometry: GeometryProxy) -> some View {
             let width = gridWidth(screenSize: geometry.size)
@@ -37,18 +61,7 @@ struct AlbumGridView: View {
                     GridItem(.adaptive(minimum: width, maximum: width), spacing: gridSpacing)
                 ]) {
                     ForEach(0..<(album.assetsResult?.count ?? 0)) { index in
-                        NavigationLink(destination: Text(album.assetsResult!.object(at: index).localIdentifier)) {
-                            AlbumGridCellView(asset: album.assetsResult!.object(at: index), size: size, thumbnailSize: thumbnailSize, requestOptions: requestOptions)
-                                .id(album.assetsResult!.object(at: index).localIdentifier)
-                                .onAppear {
-                                    let asset = album.assetsResult!.object(at: index)
-                                    AlbumService.shared.startCachingImages(for: [asset], size: thumbnailSize, requestOptions: requestOptions)
-                                }
-                                .onDisappear {
-                                    let asset = album.assetsResult!.object(at: index)
-                                    AlbumService.shared.stopCachingImages(for: [asset], size: thumbnailSize, requestOptions: requestOptions)
-                                }
-                        }
+                        NavigationLinkCell(asset: album.assetsResult!.object(at: index), size: size, thumbnailSize: thumbnailSize, requestOptions: requestOptions)
                     }
                 }
             }

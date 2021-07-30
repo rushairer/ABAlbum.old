@@ -33,7 +33,7 @@ struct AlbumService {
     var options: PHFetchOptions?
     
     var mediaType: PHAssetMediaType = .unknown
-
+    
     private var defaultOptions: PHFetchOptions {
         let option = PHFetchOptions()
         if mediaType != PHAssetMediaType.unknown {
@@ -58,7 +58,7 @@ struct AlbumService {
                             && collection.assetCollectionSubtype != PHAssetCollectionSubtype.smartAlbumAllHidden else { return }
                     
                     collection.fetchOptions = options ?? defaultOptions
-
+                    
                     guard let resut = collection.assetsResult,
                           resut.count > 0 else { return }
                     
@@ -119,7 +119,9 @@ struct AlbumService {
                         switch terminal {
                         case .cancelled:
                             let requestIDKey = info[PHImageResultRequestIDKey] as! PHImageRequestID
-                            PHCachingImageManager.default().cancelImageRequest(requestIDKey)
+                            DispatchQueue.global(qos: .userInteractive).async {
+                                PHCachingImageManager.default().cancelImageRequest(requestIDKey)
+                            }
                         default: break
                         }
                     }

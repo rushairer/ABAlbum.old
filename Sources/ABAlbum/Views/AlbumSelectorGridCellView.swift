@@ -44,17 +44,16 @@ struct AlbumSelectorGridCellView: View {
             .padding(10)
             .background(.thinMaterial)
         }
-        .onAppear {
+        .task {
             guard thumbnailImage == nil else { return }
-            Task(priority: .high) {
-                do {
-                    for try await image in AlbumService.shared.asyncImage(from: asset, size: thumbnailSize, requestOptions: requestOptions) {
-                        thumbnailImage = image
-                    }
-                } catch let error {
-                    thumbnailImage = nil
-                    print(error)
+            async let stream = AlbumService.shared.asyncImage(from: asset, size: thumbnailSize, requestOptions: requestOptions)
+            do {
+                for try await image in await stream {
+                    thumbnailImage = image
                 }
+            } catch let error {
+                thumbnailImage = nil
+                print(error)
             }
         }
     }
