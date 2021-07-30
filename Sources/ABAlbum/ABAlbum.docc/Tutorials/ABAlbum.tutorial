@@ -10,5 +10,6 @@
     
         我希望用户启动相册程序后，先选择进入哪个“相册”。
         @TutorialReference(tutorial: "doc:Create-Album-Selector-View")
+        @TutorialReference(tutorial: "doc:Get-Albums-Using-PhotoKit"
     }
 }

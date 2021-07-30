@@ -1,11 +1,11 @@
-@Tutorial(time: 30) {
+@Tutorial(time: 10) {
     @Intro(title: "创建选择“相册”的页面") {
         选择“相册”的页面，我们给它起个名字“AlbumSelectorGridView”，然后一步步展开吧。
         
         @Image(source: background-image.jpg, alt: "")
     }
     
-    @Section(title: "每个相册对应一个Cell视图") {
+    @Section(title: "CellView - 每个相册对应一个Cell视图") {
         @ContentAndMedia {
             通过分析学习系统的Photos应用，我们可以看到，选择“相册”的页面是一个网格视图，由很多Cell视图组成。
             
@@ -17,7 +17,7 @@
             @Step {
                 创建一个新的SwiftUI视图文件，并将其命名为：“AlbumSelectorGridCellView.swift”。
                 
-                @Image(source: screenshot_01_02.png, alt: "")
+                @Image(source: create-swiftui-file.png, alt: "")
             }
             @Step {
                 图片做背景底图，把标题和相册内照片数量的文本框放底部对齐。VShack 和 HStack 可以用 Spacer 填充空白部分，把视图“撑起来”。 
@@ -32,6 +32,44 @@
                 @Code(name: "AlbumSelectorGridCellView.swift", file: 01-create-album-selector-view-01-02) {
                     @Image(source: screenshot_01_03.png, alt: "")
                 }
+            }
+        }
+    } 
+    
+    @Section(title: "GridView - 使用Cell组成可滑动的网格") {
+        @ContentAndMedia {
+            有了Cell之后，我们就可以把无数的Cell组成可以上下滑动的网格了。
+            
+            为了避免Cell很多时产生的性能问题，我们使用 LazyVGrid。
+            @Image(source: screenshot_02_01.png, alt: "")
+        }
+        
+        @Steps {
+            @Step {
+                创建一个新的SwiftUI视图文件，并将其命名为：“AlbumSelectorGridView.swift”。
+                
+                @Image(source: create-swiftui-file.png, alt: "")
+            }
+            @Step {
+                把 ScrollView 设为 _.vertical_， 包裹 LazyVGrid。设置GridItem样式。填充100个AlbumSelectorGridCellView。
+                
+                效果如图。 
+                
+                @Code(name: "AlbumSelectorGridView.swift", file: 01-create-album-selector-view-02-01) {
+                    @Image(source: screenshot_02_02.png, alt: "")
+                }
+            } 
+            @Step {
+                调整一下代码。
+                
+                @Code(name: "AlbumSelectorGridView.swift", file: 01-create-album-selector-view-02-02) {
+                }
+            }
+            
+            @Step {
+                简单两步，我们的相册选择页面就做好了。可是如何真正地从系统图库拿到相册数据呢？别着急，请继续看我们后续的内容。
+                
+                @Image(source: screenshot_02_01.png, alt: "")
             }
         }
     }
