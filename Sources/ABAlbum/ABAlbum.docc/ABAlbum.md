@@ -26,6 +26,9 @@ git clone --recurse-submodules https://github.com/rushairer/ABAlbumExample.git
 ### Album
 
 - ``AlbumPage``
+- ``AlbumService``
+- ``AlbumError``
+- ``MediaType``
 
 
 ### Camera

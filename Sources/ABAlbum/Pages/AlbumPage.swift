@@ -8,6 +8,23 @@
 import SwiftUI
 import Photos
 
+/// The base page for Album.
+///
+/// You need request PHAuthorizationStatus first, and decide whether to display NoPermissionView using a Boolen binding.
+///
+/// ```swift
+///
+///  @State var showsAlbumNoPermissionView: Bool = AlbumService.shared.isNotDetermined
+///
+///  var body: some View {
+///     AlbumPage()
+///         .showsNoPermissionView($showsAlbumNoPermissionView)
+///         .task {
+///             showsAlbumNoPermissionView = await !AlbumService.shared.hasAlbumPermission
+///         }
+///  }
+///
+/// ```
 public struct AlbumPage: View {
     
     public init() {}
@@ -16,6 +33,9 @@ public struct AlbumPage: View {
         AlbumSelectorGridView()
     }
     
+    /// Show the NoPermissionView.
+    /// - Parameter showsAlbumNoPermissionView: Binding<Bool>
+    /// - Returns: AlbumPage
     public func showsNoPermissionView(_ showsAlbumNoPermissionView: Binding<Bool>) -> some View {
         self.modifier(ShowsNoPermissionView(showsAlbumNoPermissionView: showsAlbumNoPermissionView))
     }

@@ -8,8 +8,8 @@
 import Foundation
 import SwiftUI
 
-public struct Screen {
-    public static let main = Screen()
+struct Screen {
+    static let main = Screen()
     
     #if os(macOS)
     public var scale: CGFloat {

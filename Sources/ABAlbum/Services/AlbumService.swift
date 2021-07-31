@@ -9,29 +9,35 @@ import SwiftUI
 import Photos
 import Combine
 
+/// Manage the PHAuthorizationStatus, and get collections and assets.
 public struct AlbumService {
-    public static let shared = AlbumService()
     
-    static let imageManager = PHCachingImageManager()
-    
+    /// The singleton instance of AlbumService
+    public static var shared = AlbumService()
+        
+    /// Get PHAuthorizationStatus for PHAccessLevel.readWrite
     public var authorizationStatus: PHAuthorizationStatus {
         get {
             return PHPhotoLibrary.authorizationStatus(for: .readWrite)
         }
     }
     
+    /// Is PHAuthorizationStatus .notDetermined or not
     public var isNotDetermined: Bool {
         get {
             authorizationStatus == .notDetermined
         }
     }
     
+    /// If PHAuthorizationStatus is not .notDetermined, will return true.
     public var isDetermined: Bool {
         get {
             authorizationStatus != .notDetermined
         }
     }
     
+    /// If PHAuthorizationStatus is .notDetermined, it will call PHPhotoLibrary.requestAuthorization(for:).
+    /// Then if PHAuthorizationStatus is .authorized or .limited will return true.
     public var hasAlbumPermission: Bool {
         get async {
             var status: PHAuthorizationStatus = authorizationStatus
@@ -42,27 +48,30 @@ public struct AlbumService {
         }
     }
     
+    /// Register the PHPhotoLibraryChangeObserver, if PHAuthorizationStatus is .notDetermined will be skipped.
+    /// - Parameter observer: PHPhotoLibraryChangeObserver
     public func registerChangeObserver(_ observer: PHPhotoLibraryChangeObserver) {
         guard isDetermined else { return }
         PHPhotoLibrary.shared().register(observer)
     }
     
+    /// Unregister the PHPhotoLibraryChangeObserver, if PHAuthorizationStatus is .notDetermined will be skipped.
+    /// - Parameter observer: PHPhotoLibraryChangeObserver
     public func unregisterChangeObserver(_ observer: PHPhotoLibraryChangeObserver) {
         guard isDetermined else { return }
         PHPhotoLibrary.shared().unregisterChangeObserver(observer)
     }
     
-    var options: PHFetchOptions?
+    /// The PHFetchOptions for collection request, it can be nil.
+    /// If you want to set it, must before the fetch methods.
+    public var collectionFetchOptions: PHFetchOptions?
     
-    var mediaType: PHAssetMediaType = .unknown
+    static let imageManager = PHCachingImageManager()
     
-    private var defaultOptions: PHFetchOptions {
-        let option = PHFetchOptions()
-        if mediaType != PHAssetMediaType.unknown {
-            option.predicate = NSPredicate(format: "mediaType == %ld", mediaType.rawValue)
-        }
-        option.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-        return option
+    private var defaultCollectionFetchOptions: PHFetchOptions {
+        let options = PHFetchOptions()
+        options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+        return options
     }
     
     var allAssetCollections: [PHAssetCollection] {
@@ -83,7 +92,7 @@ public struct AlbumService {
                     guard collection.assetCollectionSubtype.rawValue != 1000000201
                             && collection.assetCollectionSubtype != PHAssetCollectionSubtype.smartAlbumAllHidden else { return }
                     
-                    collection.fetchOptions = options ?? defaultOptions
+                    collection.fetchOptions = collectionFetchOptions ?? defaultCollectionFetchOptions
                     
                     guard let resut = collection.assetsResult,
                           resut.count > 0 else { return }
@@ -125,7 +134,7 @@ public struct AlbumService {
                 continuation.finish(throwing: AlbumError.authorizationStatus(.notDetermined))
                 return
             }
-
+            
             AlbumService.imageManager
                 .requestImage(for: asset, targetSize: size, contentMode: .aspectFill, options: requestOptions) { image, info  in
                     guard let info = info, let image = image else { return }
