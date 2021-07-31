@@ -14,7 +14,6 @@ struct AlbumGridView: View {
     
     private let maxColumn: CGFloat = 4
     private let gridSpacing: CGFloat = 8
-    private let gridCornerRadius: CGFloat = 8
     
     private func gridWidth(screenSize: CGSize) -> CGFloat {
         return floor((min(screenSize.width, screenSize.height) - gridSpacing * (maxColumn + 1)) / maxColumn)

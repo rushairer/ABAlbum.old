@@ -9,18 +9,30 @@ import SwiftUI
 import Photos
 import Combine
 
-struct AlbumService {
-    static let shared = AlbumService()
+public struct AlbumService {
+    public static let shared = AlbumService()
     
     static let imageManager = PHCachingImageManager()
     
-    var authorizationStatus: PHAuthorizationStatus {
+    public var authorizationStatus: PHAuthorizationStatus {
         get {
             return PHPhotoLibrary.authorizationStatus(for: .readWrite)
         }
     }
     
-    var hasAlbumPermission: Bool {
+    public var isNotDetermined: Bool {
+        get {
+            authorizationStatus == .notDetermined
+        }
+    }
+    
+    public var isDetermined: Bool {
+        get {
+            authorizationStatus != .notDetermined
+        }
+    }
+    
+    public var hasAlbumPermission: Bool {
         get async {
             var status: PHAuthorizationStatus = authorizationStatus
             if status == .notDetermined {
@@ -28,6 +40,16 @@ struct AlbumService {
             }
             return status == .authorized || status == .limited
         }
+    }
+    
+    public func registerChangeObserver(_ observer: PHPhotoLibraryChangeObserver) {
+        guard isDetermined else { return }
+        PHPhotoLibrary.shared().register(observer)
+    }
+    
+    public func unregisterChangeObserver(_ observer: PHPhotoLibraryChangeObserver) {
+        guard isDetermined else { return }
+        PHPhotoLibrary.shared().unregisterChangeObserver(observer)
     }
     
     var options: PHFetchOptions?
@@ -45,6 +67,10 @@ struct AlbumService {
     
     var allAssetCollections: [PHAssetCollection] {
         get {
+            guard isDetermined else {
+                return []
+            }
+            
             let smartAlbums = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .any, options: nil)
             let userAlbums = PHCollectionList.fetchTopLevelUserCollections(with: nil) as! PHFetchResult<PHAssetCollection>
             let allAlbums: [PHFetchResult<PHAssetCollection>] = [smartAlbums, userAlbums]
@@ -76,10 +102,12 @@ struct AlbumService {
     }
     
     func startCachingImages(for assets: [PHAsset], size: CGSize, requestOptions: PHImageRequestOptions?) {
+        guard isDetermined else { return }
         AlbumService.imageManager.startCachingImages(for: assets, targetSize: size, contentMode: .aspectFill, options: requestOptions)
     }
     
     func stopCachingImages(for assets: [PHAsset], size: CGSize, requestOptions: PHImageRequestOptions?) {
+        guard isDetermined else { return }
         AlbumService.imageManager.stopCachingImages(for: assets, targetSize: size, contentMode: .aspectFill, options: requestOptions)
     }
     
@@ -93,6 +121,11 @@ struct AlbumService {
     ///
     func asyncImage(from asset: PHAsset, size: CGSize, requestOptions: PHImageRequestOptions?) ->  AsyncThrowingStream<UIImage, Error> {
         return AsyncThrowingStream<UIImage, Error> { continuation in
+            guard isDetermined else {
+                continuation.finish(throwing: AlbumError.authorizationStatus(.notDetermined))
+                return
+            }
+
             AlbumService.imageManager
                 .requestImage(for: asset, targetSize: size, contentMode: .aspectFill, options: requestOptions) { image, info  in
                     guard let info = info, let image = image else { return }

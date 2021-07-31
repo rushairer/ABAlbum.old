@@ -19,6 +19,10 @@ struct AlbumSelectorGridCellView: View {
     
     @State private var thumbnailImage: UIImage?
     
+#if DEBUG
+    @State private var errorMsg: String?
+#endif
+    
     @ViewBuilder
     var image: some View {
         if thumbnailImage == nil {
@@ -41,9 +45,25 @@ struct AlbumSelectorGridCellView: View {
                 Spacer()
                 Text("\(count ?? 0)").font(.footnote).foregroundColor(.secondary)
             }
+            .blendMode(.overlay)
+
             .padding(10)
             .background(.thinMaterial)
+#if DEBUG
+            if errorMsg != nil {
+                Text("ERROR")
+                    .font(.largeTitle)
+                    .fontWeight(.ultraLight)
+                    .blendMode(.overlay)
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 24)
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+                    .frame(maxWidth:.infinity, maxHeight: .infinity)
+            }
+#endif
         }
+        .compositingGroup()
         .task {
             guard thumbnailImage == nil else { return }
             async let stream = AlbumService.shared.asyncImage(from: asset, size: thumbnailSize, requestOptions: requestOptions)
@@ -52,8 +72,11 @@ struct AlbumSelectorGridCellView: View {
                     thumbnailImage = image
                 }
             } catch let error {
-                thumbnailImage = nil
+                thumbnailImage = UIImage(named: "photo_demo", in: .module, with: nil)
                 print(error)
+#if DEBUG
+                errorMsg = error.localizedDescription
+#endif
             }
         }
     }
@@ -62,11 +85,11 @@ struct AlbumSelectorGridCellView: View {
 struct AlbumSelectorGridCellView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            AlbumSelectorGridCellView(asset: PHAsset(), size: CGSize.zero, thumbnailSize: CGSize.zero)
+            AlbumSelectorGridCellView(asset: PHAsset(), size: CGSize(width: 200, height: 200), thumbnailSize: CGSize.zero)
                 .preferredColorScheme(.dark)
                 .previewLayout(.sizeThatFits)
                 .frame(width: 200.0, height: 200.0)
-            AlbumSelectorGridCellView(asset: PHAsset(), size: CGSize.zero, thumbnailSize: CGSize.zero)
+            AlbumSelectorGridCellView(asset: PHAsset(), size: CGSize(width: 200, height: 200), thumbnailSize: CGSize.zero)
                 .preferredColorScheme(.light)
                 .previewLayout(.sizeThatFits)
                 .frame(width: 200.0, height: 200.0)
