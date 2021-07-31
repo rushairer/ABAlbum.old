@@ -29,7 +29,7 @@ struct AlbumSelectorGridView: View {
     var body: some View {
         func internalView(geometry: GeometryProxy) -> some View {
             let width = gridWidth(screenSize: geometry.size)
-            let scale = UIScreen.main.scale
+            let scale = Screen.main.scale
             let size = CGSize(width: width, height: width)
             let thumbnailSize = CGSize(width: width * scale, height: width * scale)
             let requestOptions = PHImageRequestOptions()
