@@ -17,6 +17,10 @@ struct AlbumGridCellView: View {
     
     @State private var thumbnailImage: UIImage?
     
+#if DEBUG
+    @State private var errorMsg: String?
+#endif
+
     var body: some View {
         ZStack {
             Image(uiImage: thumbnailImage ?? UIImage())
@@ -25,7 +29,20 @@ struct AlbumGridCellView: View {
                 .frame(width: size.width, height: size.height)
                 .clipped()
                 .overlay(ProgressView().frame(width: size.width, height: size.height).background(Color(uiColor: .tertiarySystemGroupedBackground)).opacity(thumbnailImage == nil ? 1 : 0))
+#if DEBUG
+            if errorMsg != nil {
+                Text("ERROR")
+                    .font(.largeTitle)
+                    .fontWeight(.ultraLight)
+                    .blendMode(.overlay)
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 24)
+                    .background(.ultraThinMaterial)
+                    .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+            }
+#endif
         }
+        .compositingGroup()
         .task {
             guard thumbnailImage == nil else { return }
             async let stream = AlbumService.shared.asyncImage(from: asset, size: thumbnailSize, requestOptions: requestOptions)
@@ -34,15 +51,39 @@ struct AlbumGridCellView: View {
                     thumbnailImage = image
                 }
             } catch let error {
-                thumbnailImage = nil
+                thumbnailImage = UIImage(named: "photo_demo", in: .module, with: nil)
                 print(error)
+#if DEBUG
+                errorMsg = error.localizedDescription
+#endif
             }
         }
+    }
+    
+    struct ShowsNoPermissionView: ViewModifier {
+        
+        func body(content: Content) -> some View {
+            content.overlay(Color.red)
+        }
+    }
+    
+    fileprivate func showsDemoThumbnailImage() -> some View {
+        //thumbnailImage = UIImage(named: "photo_demo", in: .module, with: nil)
+        
+        return self.modifier(ShowsNoPermissionView())
     }
 }
 
 struct AlbumGridCellView_Previews: PreviewProvider {
     static var previews: some View {
-        AlbumGridCellView(asset: PHAsset(), size: CGSize.zero, thumbnailSize: CGSize.zero)
+        Group {
+            AlbumGridCellView(asset: PHAsset(), size: CGSize(width: 200, height: 200), thumbnailSize: CGSize.zero)
+                .preferredColorScheme(.dark)
+                .previewLayout(.sizeThatFits)
+                .frame(width: 200, height: 200)
+            AlbumGridCellView(asset: PHAsset(), size: CGSize(width: 200, height: 200), thumbnailSize: CGSize.zero)
+                .previewLayout(.sizeThatFits)
+                .frame(width: 200, height: 200)
+        }
     }
 }

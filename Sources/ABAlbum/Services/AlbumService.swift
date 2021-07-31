@@ -9,18 +9,36 @@ import SwiftUI
 import Photos
 import Combine
 
-struct AlbumService {
-    static let shared = AlbumService()
+/// Manage the PHAuthorizationStatus, and get collections and assets.
+public struct AlbumService {
     
-    static let imageManager = PHCachingImageManager()
-    
-    var authorizationStatus: PHAuthorizationStatus {
+    /// The singleton instance of AlbumService
+    public static var shared = AlbumService()
+        
+    /// Get PHAuthorizationStatus for PHAccessLevel.readWrite
+    public var authorizationStatus: PHAuthorizationStatus {
         get {
             return PHPhotoLibrary.authorizationStatus(for: .readWrite)
         }
     }
     
-    var hasAlbumPermission: Bool {
+    /// Is PHAuthorizationStatus .notDetermined or not
+    public var isNotDetermined: Bool {
+        get {
+            authorizationStatus == .notDetermined
+        }
+    }
+    
+    /// If PHAuthorizationStatus is not .notDetermined, will return true.
+    public var isDetermined: Bool {
+        get {
+            authorizationStatus != .notDetermined
+        }
+    }
+    
+    /// If PHAuthorizationStatus is .notDetermined, it will call PHPhotoLibrary.requestAuthorization(for:).
+    /// Then if PHAuthorizationStatus is .authorized or .limited will return true.
+    public var hasAlbumPermission: Bool {
         get async {
             var status: PHAuthorizationStatus = authorizationStatus
             if status == .notDetermined {
@@ -30,21 +48,38 @@ struct AlbumService {
         }
     }
     
-    var options: PHFetchOptions?
+    /// Register the PHPhotoLibraryChangeObserver, if PHAuthorizationStatus is .notDetermined will be skipped.
+    /// - Parameter observer: PHPhotoLibraryChangeObserver
+    public func registerChangeObserver(_ observer: PHPhotoLibraryChangeObserver) {
+        guard isDetermined else { return }
+        PHPhotoLibrary.shared().register(observer)
+    }
     
-    var mediaType: PHAssetMediaType = .unknown
+    /// Unregister the PHPhotoLibraryChangeObserver, if PHAuthorizationStatus is .notDetermined will be skipped.
+    /// - Parameter observer: PHPhotoLibraryChangeObserver
+    public func unregisterChangeObserver(_ observer: PHPhotoLibraryChangeObserver) {
+        guard isDetermined else { return }
+        PHPhotoLibrary.shared().unregisterChangeObserver(observer)
+    }
     
-    private var defaultOptions: PHFetchOptions {
-        let option = PHFetchOptions()
-        if mediaType != PHAssetMediaType.unknown {
-            option.predicate = NSPredicate(format: "mediaType == %ld", mediaType.rawValue)
-        }
-        option.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
-        return option
+    /// The PHFetchOptions for collection request, it can be nil.
+    /// If you want to set it, must before the fetch methods.
+    public var collectionFetchOptions: PHFetchOptions?
+    
+    static let imageManager = PHCachingImageManager()
+    
+    private var defaultCollectionFetchOptions: PHFetchOptions {
+        let options = PHFetchOptions()
+        options.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
+        return options
     }
     
     var allAssetCollections: [PHAssetCollection] {
         get {
+            guard isDetermined else {
+                return []
+            }
+            
             let smartAlbums = PHAssetCollection.fetchAssetCollections(with: .smartAlbum, subtype: .any, options: nil)
             let userAlbums = PHCollectionList.fetchTopLevelUserCollections(with: nil) as! PHFetchResult<PHAssetCollection>
             let allAlbums: [PHFetchResult<PHAssetCollection>] = [smartAlbums, userAlbums]
@@ -57,7 +92,7 @@ struct AlbumService {
                     guard collection.assetCollectionSubtype.rawValue != 1000000201
                             && collection.assetCollectionSubtype != PHAssetCollectionSubtype.smartAlbumAllHidden else { return }
                     
-                    collection.fetchOptions = options ?? defaultOptions
+                    collection.fetchOptions = collectionFetchOptions ?? defaultCollectionFetchOptions
                     
                     guard let resut = collection.assetsResult,
                           resut.count > 0 else { return }
@@ -76,10 +111,12 @@ struct AlbumService {
     }
     
     func startCachingImages(for assets: [PHAsset], size: CGSize, requestOptions: PHImageRequestOptions?) {
+        guard isDetermined else { return }
         AlbumService.imageManager.startCachingImages(for: assets, targetSize: size, contentMode: .aspectFill, options: requestOptions)
     }
     
     func stopCachingImages(for assets: [PHAsset], size: CGSize, requestOptions: PHImageRequestOptions?) {
+        guard isDetermined else { return }
         AlbumService.imageManager.stopCachingImages(for: assets, targetSize: size, contentMode: .aspectFill, options: requestOptions)
     }
     
@@ -93,6 +130,11 @@ struct AlbumService {
     ///
     func asyncImage(from asset: PHAsset, size: CGSize, requestOptions: PHImageRequestOptions?) ->  AsyncThrowingStream<UIImage, Error> {
         return AsyncThrowingStream<UIImage, Error> { continuation in
+            guard isDetermined else {
+                continuation.finish(throwing: AlbumError.authorizationStatus(.notDetermined))
+                return
+            }
+            
             AlbumService.imageManager
                 .requestImage(for: asset, targetSize: size, contentMode: .aspectFill, options: requestOptions) { image, info  in
                     guard let info = info, let image = image else { return }

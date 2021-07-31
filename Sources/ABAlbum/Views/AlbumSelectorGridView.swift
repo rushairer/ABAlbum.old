@@ -15,7 +15,6 @@ struct AlbumSelectorGridView: View {
     
     private let maxColumn: CGFloat = 2
     private let gridSpacing: CGFloat = 8
-    private let gridCornerRadius: CGFloat = 8
     
     private func gridWidth(screenSize: CGSize) -> CGFloat {
         return floor((min(screenSize.width, screenSize.height) - gridSpacing * (maxColumn + 1)) / maxColumn)
@@ -30,7 +29,7 @@ struct AlbumSelectorGridView: View {
     var body: some View {
         func internalView(geometry: GeometryProxy) -> some View {
             let width = gridWidth(screenSize: geometry.size)
-            let scale = UIScreen.main.scale
+            let scale = Screen.main.scale
             let size = CGSize(width: width, height: width)
             let thumbnailSize = CGSize(width: width * scale, height: width * scale)
             let requestOptions = PHImageRequestOptions()
@@ -72,11 +71,13 @@ struct AlbumSelectorGridView: View {
     
     func registerChangeObserver() {
         coordinator = self.makeCoordinator()
-        PHPhotoLibrary.shared().register(coordinator!)
+        guard coordinator != nil else { return }
+        AlbumService.shared.registerChangeObserver(coordinator!)
     }
     
     func unregisterChangeObserver() {
-        PHPhotoLibrary.shared().unregisterChangeObserver(coordinator!)
+        guard coordinator != nil else { return }
+        AlbumService.shared.unregisterChangeObserver(coordinator!)
     }
     
     func requestAssetCollections() {

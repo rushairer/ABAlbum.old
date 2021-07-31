@@ -8,37 +8,61 @@
 import SwiftUI
 import Photos
 
+/// The base page for Album.
+///
+/// You need request PHAuthorizationStatus first, and decide whether to display NoPermissionView using a Boolen binding.
+///
+/// ```swift
+///
+///  @State var showsAlbumNoPermissionView: Bool = AlbumService.shared.isNotDetermined
+///
+///  var body: some View {
+///     AlbumPage()
+///         .showsNoPermissionView($showsAlbumNoPermissionView)
+///         .task {
+///             showsAlbumNoPermissionView = await !AlbumService.shared.hasAlbumPermission
+///         }
+///  }
+///
+/// ```
 public struct AlbumPage: View {
-    
-    /// 是否显示权限提示页. 默认: 不显示.
-    @State private var showsAlbumNoPermissionView: Bool = false
     
     public init() {}
     
-    private var albumNoPermissionView: some View {
-        AlbumNoPermissionView()
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(.background)
-            .opacity(showsAlbumNoPermissionView ? 1 : 0)
-    }
-    
     public var body: some View {
         AlbumSelectorGridView()
-            .overlay(albumNoPermissionView)
-            .id(showsAlbumNoPermissionView) /// 第一次启动申请时, 会造成 showsAlbumNoPermissionView 改变, 从而在授权后刷新View.
-            .task {
-                /// 如果未授权, 显示权限提示页.
-                if AlbumService.shared.authorizationStatus == .notDetermined {
-                    showsAlbumNoPermissionView = true
-                }
-                /// 判断是否有相册服访问权限.
-                showsAlbumNoPermissionView = await !AlbumService.shared.hasAlbumPermission
+    }
+    
+    /// Show the NoPermissionView.
+    /// - Parameter showsAlbumNoPermissionView: Binding<Bool>
+    /// - Returns: AlbumPage
+    public func showsNoPermissionView(_ showsAlbumNoPermissionView: Binding<Bool>) -> some View {
+        self.modifier(ShowsNoPermissionView(showsAlbumNoPermissionView: showsAlbumNoPermissionView))
+    }
+    
+    struct ShowsNoPermissionView: ViewModifier {
+        @Binding var showsAlbumNoPermissionView: Bool
+        
+        func body(content: Content) -> some View {
+            if showsAlbumNoPermissionView {
+                content
+                    .overlay(
+                        AlbumNoPermissionView()
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(.background)
+                    )
+            } else {
+                content
             }
+        }
     }
 }
 
 struct AlbumPage_Previews: PreviewProvider {
     static var previews: some View {
-        AlbumPage()
+        Group {
+            AlbumPage()
+            AlbumPage().showsNoPermissionView(.constant(true))
+        }
     }
 }
