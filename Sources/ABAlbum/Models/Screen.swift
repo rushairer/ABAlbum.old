@@ -1,6 +1,6 @@
 //
-//  File.swift
-//  File
+//  Screen.swift
+//  ABAlbum
 //
 //  Created by Abenx on 2021/7/31.
 //
