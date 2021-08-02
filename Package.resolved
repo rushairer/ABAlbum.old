@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "ZoomableImageView",
+        "repositoryURL": "https://github.com/rushairer/ZoomableImageView.git",
+        "state": {
+          "branch": null,
+          "revision": "b536dfe1a1c5b3f80ed75c73d9ca7a6a91e0bcb1",
+          "version": "1.0.0"
+        }
+      }
+    ]
+  },
+  "version": 1
+}

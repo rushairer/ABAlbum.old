@@ -36,7 +36,7 @@ struct AlbumGridView: View {
                     GridItem(.adaptive(minimum: width, maximum: width), spacing: gridSpacing)
                 ]) {
                     ForEach(0..<(album.assetsResult?.count ?? 0)) { index in
-                        NavigationLink(destination: Text(album.assetsResult!.object(at: index).localIdentifier)) {
+                        NavigationLink(destination: AlbumPreviewView(asset: album.assetsResult!.object(at: index))) {
                             AlbumGridCellView(asset: album.assetsResult!.object(at: index), size: size, thumbnailSize: thumbnailSize, requestOptions: requestOptions)
                                 .id(album.assetsResult!.object(at: index).localIdentifier)
                         }

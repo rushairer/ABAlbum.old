@@ -42,7 +42,6 @@ struct AlbumGridCellView: View {
             }
 #endif
         }
-        .compositingGroup()
         .task {
             guard thumbnailImage == nil else { return }
             async let stream = AlbumService.shared.asyncImage(from: asset, size: thumbnailSize, requestOptions: requestOptions)

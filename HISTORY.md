@@ -1,5 +1,9 @@
 # 0.1.0
 
+`2021-08-01`
+### Added
+    - Add PreviewView.
+    
 `2021-07-31`
 ### Changed
     - Change views to fix PreviewProvider.
