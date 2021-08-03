@@ -23,7 +23,7 @@ struct AlbumGridView: View {
     
     /// 激活图片遮挡
     @State private var currentAssetMaskReact: CGRect = .zero
-
+    
     /// 激活图片缩略图透明度
     @State private var currentAssetOpacity: Double = 0
     
@@ -119,9 +119,10 @@ struct AlbumGridView: View {
                     let preference = cellFramePreferences.first(where: { $0.localIdentifier == currentAssetIndex })
                     guard preference != nil && preference?.frame != nil && currentAssetIndex != nil else { return }
                     
+                    /// 加载缩略图
                     Task {
                         let assetResult: PHFetchResult<PHAsset> = PHAsset.fetchAssets(withLocalIdentifiers: [currentAssetIndex!],
-                                                                                            options: nil)
+                                                                                      options: nil)
                         if assetResult.count > 0 {
                             async let stream = AlbumService.shared.asyncImage(from: assetResult.firstObject!,
                                                                               size: geometry.size,
@@ -136,15 +137,20 @@ struct AlbumGridView: View {
                         }
                     }
                     
+                    /// 遮挡色块移动到 cell 上方
                     currentAssetMaskReact = preference!.frame
                     
+                    /// 缩略图缩放到 cell 位置
                     withAnimation {
                         currentAssetReact = preference!.frame
                     }
+                    
+                    /// 缩略图变透明
                     withAnimation(.easeOut(duration: 0.4)) {
                         currentAssetOpacity = 0
                     }
                     
+                    /// 遮挡色块变透明
                     withAnimation(.linear(duration: 0.2).delay(0.2)) {
                         currentAssetMaskOpacity = 0
                     }
