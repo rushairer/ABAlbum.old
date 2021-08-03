@@ -15,8 +15,38 @@ struct AlbumGridView: View {
     private let maxColumn: CGFloat = 4
     private let gridSpacing: CGFloat = 8
     
+    /// 点击时跳转
+    @State private var currentAssetLocalIdentifier: String?
+    
+    /// 激活图片所在区域
+    @State private var currentAssetReact: CGRect = .zero
+    
+    /// 激活图片遮挡
+    @State private var currentAssetMaskReact: CGRect = .zero
+
+    /// 激活图片缩略图透明度
+    @State private var currentAssetOpacity: Double = 0
+    
+    /// 激活图片遮挡透明度
+    @State private var currentAssetMaskOpacity: Double = 0
+    
+    /// 激活图片的索引(localIdentifier)
+    @State private var currentAssetIndex: String?
+    
+    /// 屏幕中 cells 的位置信息
+    @State private var cellFramePreferences: [CellFramePreference] = []
+    
+    @State private var thumbnailImage: UIImage?
+    
+    @EnvironmentObject var viewModel: AlbumViewModels
+    
     private func gridWidth(screenSize: CGSize) -> CGFloat {
         return floor((min(screenSize.width, screenSize.height) - gridSpacing * (maxColumn + 1)) / maxColumn)
+    }
+    
+    @MainActor
+    private func updateThumbnailImage(image: UIImage) {
+        thumbnailImage = image
     }
     
     var body: some View {
@@ -31,22 +61,121 @@ struct AlbumGridView: View {
             requestOptions.resizeMode = .fast
             requestOptions.isNetworkAccessAllowed = true
             
-            return ScrollView(.vertical) {
-                LazyVGrid(columns: [
-                    GridItem(.adaptive(minimum: width, maximum: width), spacing: gridSpacing)
-                ]) {
-                    ForEach(0..<(album.assetsResult?.count ?? 0)) { index in
-                        NavigationLink(destination: AlbumPreviewView(asset: album.assetsResult!.object(at: index))) {
-                            AlbumGridCellView(asset: album.assetsResult!.object(at: index), size: size, thumbnailSize: thumbnailSize, requestOptions: requestOptions)
+            return ScrollViewReader { scrollViewProxy in
+                ZStack(alignment: .topLeading) {
+                    ScrollView(.vertical) {
+                        LazyVGrid(columns: [
+                            GridItem(.adaptive(minimum: width, maximum: width), spacing: gridSpacing)
+                        ]) {
+                            ForEach(0..<(album.assetsResult?.count ?? 0)) { index in
+                                GeometryReader { proxy in
+                                    NavigationLink(tag: album.assetsResult!.object(at: index).localIdentifier,
+                                                   selection: $currentAssetLocalIdentifier,
+                                                   destination: {
+                                        AlbumPreviewView(currentAssetLocalIdentifier: currentAssetLocalIdentifier,
+                                                         album: album) { index in
+                                            guard let index = index else { return }
+                                            scrollViewProxy.scrollTo(index)
+                                            currentAssetIndex = index
+                                        }
+                                    }) {
+                                        AlbumGridCellView(asset: album.assetsResult!.object(at: index),
+                                                          size: size,
+                                                          thumbnailSize: thumbnailSize,
+                                                          requestOptions: requestOptions)
+                                            .onTapGesture {
+                                                currentAssetLocalIdentifier = album.assetsResult!.object(at: index).localIdentifier
+                                            }
+                                            .preference(key: CellFramePreferenceKey.self,
+                                                        value: [
+                                                            CellFramePreference(localIdentifier: album.assetsResult!.object(at: index).localIdentifier,
+                                                                                frame: proxy.frame(in: .named(index)))
+                                                        ])
+                                    }
+                                }
+                                .frame(width: width, height: width)
                                 .id(album.assetsResult!.object(at: index).localIdentifier)
+                            }
                         }
                     }
+                    Color
+                        .clear
+                        .background(Image(uiImage: thumbnailImage ?? UIImage()).resizable().scaledToFill())
+                        .offset(x: currentAssetReact.origin.x,
+                                y: currentAssetReact.origin.y - geometry.safeAreaInsets.top)
+                        .frame(width: currentAssetReact.width,
+                               height: currentAssetReact.height)
+                        .opacity(currentAssetOpacity)
+                    
+                    Color(uiColor: .systemBackground)
+                        .offset(x: currentAssetMaskReact.origin.x,
+                                y: currentAssetMaskReact.origin.y - geometry.safeAreaInsets.top)
+                        .frame(width: currentAssetMaskReact.width,
+                               height: currentAssetMaskReact.height)
+                        .opacity(currentAssetMaskOpacity)
                 }
+                .onPreferenceChange(CellFramePreferenceKey.self, perform: { preferences in
+                    cellFramePreferences = preferences
+                })
+                .onAppear {
+                    let preference = cellFramePreferences.first(where: { $0.localIdentifier == currentAssetIndex })
+                    guard preference != nil && preference?.frame != nil && currentAssetIndex != nil else { return }
+                    
+                    Task {
+                        let assetResult: PHFetchResult<PHAsset> = await PHAsset.fetchAssets(withLocalIdentifiers: [currentAssetIndex!],
+                                                                                            options: nil)
+                        if assetResult.count > 0 {
+                            async let stream = AlbumService.shared.asyncImage(from: assetResult.firstObject!,
+                                                                              size: geometry.size,
+                                                                              requestOptions: nil)
+                            do {
+                                for try await image in await stream {
+                                    await updateThumbnailImage(image: image)
+                                }
+                            } catch let error {
+                                print(error)
+                            }
+                        }
+                    }
+                    
+                    currentAssetMaskReact = preference!.frame
+                    
+                    withAnimation {
+                        currentAssetReact = preference!.frame
+                    }
+                    withAnimation(.easeOut(duration: 0.4)) {
+                        currentAssetOpacity = 0
+                    }
+                    
+                    withAnimation(.linear(duration: 0.2).delay(0.2)) {
+                        currentAssetMaskOpacity = 0
+                    }
+                }
+                .onDisappear {
+                    currentAssetReact = geometry.frame(in: .global)
+                    currentAssetReact.origin.x = currentAssetReact.size.width
+                    currentAssetOpacity = 1
+                    currentAssetMaskOpacity = 1
+                    thumbnailImage = nil
+                }
+                .navigationTitle(album.localizedTitle ?? "Untitled")
+                .coordinateSpace(name: "AlbumGridViewSpace")
             }
-            .navigationTitle(album.localizedTitle ?? "Untitled")
         }
-        
         return GeometryReader(content: internalView(geometry:))
+    }
+}
+
+struct CellFramePreference: Equatable {
+    let localIdentifier: String
+    let frame: CGRect
+}
+
+struct CellFramePreferenceKey: PreferenceKey {
+    typealias Value = [CellFramePreference]
+    static var defaultValue: [CellFramePreference] = []
+    static func reduce(value: inout [CellFramePreference], nextValue: () -> [CellFramePreference]) {
+        value.append(contentsOf: nextValue())
     }
 }
 

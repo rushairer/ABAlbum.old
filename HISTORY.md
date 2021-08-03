@@ -1,5 +1,9 @@
 # 0.1.0
 
+`2021-08-03`
+### Added
+    - Add Preview TabView list.
+    
 `2021-08-01`
 ### Added
     - Add PreviewView.
