@@ -38,8 +38,6 @@ struct AlbumGridView: View {
     
     @State private var thumbnailImage: UIImage?
     
-    @EnvironmentObject var viewModel: AlbumViewModels
-    
     private func gridWidth(screenSize: CGSize) -> CGFloat {
         return floor((min(screenSize.width, screenSize.height) - gridSpacing * (maxColumn + 1)) / maxColumn)
     }
