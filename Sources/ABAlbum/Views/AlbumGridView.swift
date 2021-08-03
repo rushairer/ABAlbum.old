@@ -120,7 +120,7 @@ struct AlbumGridView: View {
                     guard preference != nil && preference?.frame != nil && currentAssetIndex != nil else { return }
                     
                     Task {
-                        let assetResult: PHFetchResult<PHAsset> = await PHAsset.fetchAssets(withLocalIdentifiers: [currentAssetIndex!],
+                        let assetResult: PHFetchResult<PHAsset> = PHAsset.fetchAssets(withLocalIdentifiers: [currentAssetIndex!],
                                                                                             options: nil)
                         if assetResult.count > 0 {
                             async let stream = AlbumService.shared.asyncImage(from: assetResult.firstObject!,
