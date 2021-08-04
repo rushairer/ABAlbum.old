@@ -14,8 +14,8 @@ struct AlbumPreviewView: View {
     var onIndexChange: ((String?) -> Void)?
     
     var body: some View {
-        GeometryReader { proxy in
-            ZStack(alignment: .bottom) {
+        ZStack(alignment: .bottom) {
+            GeometryReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
                     TabView(selection: $currentAssetLocalIdentifier) {
                         ForEach(0..<(album.assetsResult?.count ?? 0)) { index in
@@ -27,65 +27,65 @@ struct AlbumPreviewView: View {
                     .frame(width: proxy.size.width, height: proxy.size.height)
                     .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 }
+            }
+            .ignoresSafeArea()
+
+            HStack {
+                Button {
+                    
+                } label: {
+                    Image(systemName: "trash.fill")
+                }
+                .padding(.vertical, 16)
+                .padding(.horizontal, 26)
                 
-                HStack {
-                    Button {
-                        
-                    } label: {
-                        Image(systemName: "trash.fill")
-                    }
-                    .padding(.vertical, 16)
-                    .padding(.horizontal, 26)
+                Spacer()
+                
+                Button {
                     
-                    Spacer()
-                    
-                    Button {
-                        
-                    } label: {
-                        Image(systemName: "heart")
-                    }
-                    .padding(.vertical, 16)
-                    .padding(.horizontal, 26)
-                    
-                    Spacer()
-                    
-                    Button {
-                        
-                    } label: {
-                        Image(systemName: "square.and.arrow.up.fill")
-                    }
-                    .padding(.vertical, 16)
-                    .padding(.horizontal, 26)
-                    
-                    Spacer()
-                    
-                    Button {
-                        
-                    } label: {
-                        Image(systemName: "rectangle.portrait.and.arrow.right.fill")
-                    }
-                    .padding(.vertical, 16)
-                    .padding(.horizontal, 26)
+                } label: {
+                    Image(systemName: "heart")
                 }
-                .font(.title2)
-                .background(.thinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-                .padding(.vertical, 14)
-                .padding(.horizontal, 20)
-                .toolbar {
-                    ToolbarItem(placement: .navigationBarTrailing) {
-                        Button {
-                            
-                        } label: {
-                            Image(systemName: "info.circle.fill")
-                        }
-                        .padding()
-                    }
+                .padding(.vertical, 16)
+                .padding(.horizontal, 26)
+                
+                Spacer()
+                
+                Button {
                     
+                } label: {
+                    Image(systemName: "square.and.arrow.up.fill")
                 }
+                .padding(.vertical, 16)
+                .padding(.horizontal, 26)
+                
+                Spacer()
+                
+                Button {
+                    
+                } label: {
+                    Image(systemName: "rectangle.portrait.and.arrow.right.fill")
+                }
+                .padding(.vertical, 16)
+                .padding(.horizontal, 26)
+            }
+            .font(.title2)
+            .background(.thinMaterial)
+            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+            .padding(.vertical, 14)
+            .padding(.horizontal, 20)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "info.circle.fill")
+                    }
+                    .padding()
+                }
+                
             }
         }
-        .ignoresSafeArea()
         .navigationBarTitleDisplayMode(.inline)
         .onReceive(currentAssetLocalIdentifier.publisher) { index in
             guard onIndexChange != nil else { return }
