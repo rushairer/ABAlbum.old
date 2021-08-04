@@ -15,26 +15,82 @@ struct AlbumPreviewView: View {
     
     var body: some View {
         GeometryReader { proxy in
-            ZStack {
-                TabView(selection: $currentAssetLocalIdentifier) {
-                    ForEach(0..<(album.assetsResult?.count ?? 0)) { index in
-                        AlbumPreviewCellView(asset: album.assetsResult!.object(at: index))
-                            .padding(.trailing, 10)
-                            .tag(album.assetsResult?.object(at: index).localIdentifier)
+            ZStack(alignment: .bottom) {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    TabView(selection: $currentAssetLocalIdentifier) {
+                        ForEach(0..<(album.assetsResult?.count ?? 0)) { index in
+                            AlbumPreviewCellView(asset: album.assetsResult!.object(at: index))
+                                .padding(.trailing, 10)
+                                .tag(album.assetsResult?.object(at: index).localIdentifier)
+                        }
                     }
-                    .offset(x: 0, y: -proxy.safeAreaInsets.top)
-                    .ignoresSafeArea(.all, edges: .all)
+                    .frame(width: proxy.size.width, height: proxy.size.height)
+                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                 }
-                .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                .offset(x: 0, y: 0)
+                
+                HStack {
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "trash.fill")
+                    }
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 26)
+                    
+                    Spacer()
+                    
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "heart")
+                    }
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 26)
+                    
+                    Spacer()
+                    
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "square.and.arrow.up.fill")
+                    }
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 26)
+                    
+                    Spacer()
+                    
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "rectangle.portrait.and.arrow.right.fill")
+                    }
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 26)
+                }
+                .font(.title2)
+                .background(.thinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .padding(.vertical, 14)
+                .padding(.horizontal, 20)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            
+                        } label: {
+                            Image(systemName: "info.circle.fill")
+                        }
+                        .padding()
+                    }
+                    
+                }
             }
-            .ignoresSafeArea()
         }
+        .ignoresSafeArea()
+        .navigationBarTitleDisplayMode(.inline)
         .onReceive(currentAssetLocalIdentifier.publisher) { index in
             guard onIndexChange != nil else { return }
             onIndexChange!(index)
         }
-        .navigationBarTitleDisplayMode(.inline)
     }
 }
 
