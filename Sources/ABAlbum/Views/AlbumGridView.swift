@@ -81,7 +81,6 @@ struct AlbumGridView: View {
                                                           thumbnailSize: thumbnailSize,
                                                           requestOptions: requestOptions)
                                             .onTapGesture {
-                                                print(index, album.assetsResult!.object(at: index).localIdentifier)
                                                 currentAssetLocalIdentifier = album.assetsResult!.object(at: index).localIdentifier
                                             }
                                             .preference(key: CellFramePreferenceKey.self,

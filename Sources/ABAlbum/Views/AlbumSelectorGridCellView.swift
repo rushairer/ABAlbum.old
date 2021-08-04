@@ -39,16 +39,20 @@ struct AlbumSelectorGridCellView: View {
                 .scaledToFill()
                 .frame(width: size.width, height: size.height)
                 .clipped()
-                .overlay(ProgressView().frame(width: size.width, height: size.height).background(Color(uiColor: .tertiarySystemGroupedBackground)).opacity(thumbnailImage == nil ? 1 : 0))
+                .overlay(
+                    ProgressView()
+                        .frame(width: size.width, height: size.height)
+                        .background(Color(uiColor: .tertiarySystemGroupedBackground))
+                        .opacity(thumbnailImage == nil ? 1 : 0)
+                )
             HStack {
                 Text(title ?? "Untitled")
                 Spacer()
                 Text("\(count ?? 0)").font(.footnote).foregroundColor(.secondary)
             }
             .blendMode(.overlay)
-
             .padding(10)
-            .background(.thinMaterial)
+            .background(.ultraThinMaterial)
 #if DEBUG
             if errorMsg != nil {
                 Text("ERROR")

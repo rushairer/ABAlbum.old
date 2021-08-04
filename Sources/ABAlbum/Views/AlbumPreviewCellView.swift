@@ -11,7 +11,6 @@ import ZoomableImageView
 
 struct AlbumPreviewCellView: View {
     var asset: PHAsset
-    
     @State private var scale: CGFloat = 1.0
     @State private var lastScaleValue: CGFloat = 1.0
     @State private var previewImage: UIImage =  UIImage()
@@ -30,7 +29,15 @@ struct AlbumPreviewCellView: View {
                     ProgressView()
                 }
             }
-            .navigationTitle(asset.creationDate?.stringValue ?? "")
+            //.navigationTitle(asset.creationDate?.stringValue ?? "")
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    VStack {
+                        Text("\(asset.creationDate?.dateStringValue ?? "")")
+                        Text("\(asset.creationDate?.timeStringValue ?? "")").font(.caption)
+                    }
+                }
+            }
             .task {
                 // fix: 去掉缓存判断，每次加载cell时候都要重新请求图片。
                 // 如果保留以下代码，点击非第一张进入TabView的时候，会默认给第一个cell渲染，然后跳转到点击的cell。这样的结果会导致第一个cell只得到缩略图。

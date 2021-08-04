@@ -12,7 +12,6 @@ struct AlbumPreviewView: View {
     @State var currentAssetLocalIdentifier: String?
     var album: PHAssetCollection
     var onIndexChange: ((String?) -> Void)?
-    
     var body: some View {
         ZStack(alignment: .bottom) {
             GeometryReader { proxy in
@@ -29,61 +28,66 @@ struct AlbumPreviewView: View {
                 }
             }
             .ignoresSafeArea()
-
-            HStack {
-                Button {
-                    
-                } label: {
-                    Image(systemName: "trash.fill")
-                }
-                .padding(.vertical, 16)
-                .padding(.horizontal, 26)
-                
+            
+            VStack {
+                Rectangle()
+                    .frame(maxWidth: .infinity, maxHeight: 0)
+                    .background(.thinMaterial)
                 Spacer()
-                
-                Button {
-                    
-                } label: {
-                    Image(systemName: "heart")
-                }
-                .padding(.vertical, 16)
-                .padding(.horizontal, 26)
-                
-                Spacer()
-                
-                Button {
-                    
-                } label: {
-                    Image(systemName: "square.and.arrow.up.fill")
-                }
-                .padding(.vertical, 16)
-                .padding(.horizontal, 26)
-                
-                Spacer()
-                
-                Button {
-                    
-                } label: {
-                    Image(systemName: "rectangle.portrait.and.arrow.right.fill")
-                }
-                .padding(.vertical, 16)
-                .padding(.horizontal, 26)
-            }
-            .font(.title2)
-            .background(.thinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
-            .padding(.vertical, 14)
-            .padding(.horizontal, 20)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                HStack {
                     Button {
                         
                     } label: {
-                        Image(systemName: "info.circle.fill")
+                        Image(systemName: "trash.fill")
                     }
-                    .padding()
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 26)
+                    
+                    Spacer()
+                    
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "heart")
+                    }
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 26)
+                    
+                    Spacer()
+                    
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "square.and.arrow.up.fill")
+                    }
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 26)
+                    
+                    Spacer()
+                    
+                    Button {
+                        
+                    } label: {
+                        Image(systemName: "rectangle.portrait.and.arrow.right.fill")
+                    }
+                    .padding(.vertical, 16)
+                    .padding(.horizontal, 26)
                 }
-                
+                .font(.title2)
+                .background(.thinMaterial)
+                .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                .padding(.vertical, 14)
+                .padding(.horizontal, 20)
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        Button {
+                            
+                        } label: {
+                            Image(systemName: "info.circle.fill")
+                        }
+                        .padding()
+                    }
+                }
             }
         }
         .navigationBarTitleDisplayMode(.inline)
