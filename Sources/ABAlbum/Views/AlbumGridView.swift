@@ -22,7 +22,11 @@ struct AlbumGridView: View {
     @State private var thumbnailOpacity: Double = 1
     
     /// 点击时跳转
-    @State private var currentAssetLocalIdentifier: String?
+    @State private var currentAssetLocalIdentifier: String? {
+        didSet {
+            print(currentAssetLocalIdentifier)
+        }
+    }
     
     /// 激活图片所在区域
     @State private var thumbnailReact: CGRect = .zero
@@ -69,7 +73,7 @@ struct AlbumGridView: View {
                                     NavigationLink(tag: album.assetsResult!.object(at: index).localIdentifier,
                                                    selection: $currentAssetLocalIdentifier,
                                                    destination: {
-                                        AlbumPreviewView(currentAssetLocalIdentifier: currentAssetLocalIdentifier,
+                                        AlbumPreviewView(currentAssetLocalIdentifier: $currentAssetLocalIdentifier,
                                                          album: album) { index in
                                             guard let index = index else { return }
                                             scrollViewProxy.scrollTo(index)

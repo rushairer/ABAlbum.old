@@ -9,9 +9,9 @@ import SwiftUI
 import Photos
 
 struct AlbumSelectorGridView: View {
+    @Environment(\.albumChangeObserver) var albumChangeObserver: AlbumChangeObserver
     
     @State private var allAssetCollections: [PHAssetCollection] = []
-    @State private var coordinator: Coordinator?
     
     private let maxColumn: CGFloat = 2
     private let gridSpacing: CGFloat = 8
@@ -57,27 +57,12 @@ struct AlbumSelectorGridView: View {
             }
             .overlay(AlbumEmptyView().opacity(allAssetCollections.count > 0 ? 0 : 1))
             .navigationTitle("Albums")
-            .onAppear {
-                requestAssetCollections()
-                registerChangeObserver()
-            }
-            .onDisappear {
-                unregisterChangeObserver()
-            }
         }
         
         return GeometryReader(content: internalView(geometry:))
-    }
-    
-    func registerChangeObserver() {
-        coordinator = self.makeCoordinator()
-        guard coordinator != nil else { return }
-        AlbumService.shared.registerChangeObserver(coordinator!)
-    }
-    
-    func unregisterChangeObserver() {
-        guard coordinator != nil else { return }
-        AlbumService.shared.unregisterChangeObserver(coordinator!)
+            .onReceive(albumChangeObserver.$changeInstance) { changeInstance in
+                refreshAssetCollections()
+            }
     }
     
     func requestAssetCollections() {
@@ -87,22 +72,6 @@ struct AlbumSelectorGridView: View {
     func refreshAssetCollections() {
         allAssetCollections = []
         requestAssetCollections()
-    }
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-    
-    class Coordinator: NSObject, PHPhotoLibraryChangeObserver {
-        var parent: AlbumSelectorGridView
-        
-        init(_ parentView: AlbumSelectorGridView) {
-            parent = parentView
-        }
-        
-        func photoLibraryDidChange(_ changeInstance: PHChange) {
-            parent.refreshAssetCollections()
-        }
     }
 }
 
