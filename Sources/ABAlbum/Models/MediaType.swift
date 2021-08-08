@@ -8,13 +8,13 @@
 import Foundation
 
 /// 媒体类型.
-public enum MediaType: String, CaseIterable {
+public enum MediaType: Int, CaseIterable {
     /// 照片和视频
-    case both
+    case both = 0
 
     /// 仅照片
-    case image
+    case image = 1
 
     /// 仅视频
-    case video
+    case video = 2
 }

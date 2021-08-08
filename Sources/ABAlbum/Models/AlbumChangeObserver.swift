@@ -1,6 +1,6 @@
 //
-//  ChangeObserver.swift
-//  File
+//  AlbumChangeObserver.swift
+//  ABAlbum
 //
 //  Created by Abenx on 2021/8/7.
 //
@@ -13,11 +13,11 @@ class AlbumChangeObserver: NSObject, ObservableObject, PHPhotoLibraryChangeObser
     
     override init() {
         super.init()
-        AlbumService.shared.registerChangeObserver(self)
+        AlbumService.registerChangeObserver(self)
     }
     
     deinit {
-        AlbumService.shared.unregisterChangeObserver(self)
+        AlbumService.unregisterChangeObserver(self)
     }
     
     func photoLibraryDidChange(_ changeInstance: PHChange) {
@@ -38,6 +38,6 @@ extension EnvironmentValues {
     }
 }
 
-struct AlbumChangeObserverKey: EnvironmentKey {
+private struct AlbumChangeObserverKey: EnvironmentKey {
     static let defaultValue: AlbumChangeObserver = AlbumChangeObserver()
 }

@@ -43,13 +43,7 @@ struct AlbumPreviewCellView: View {
                 // 如果保留以下代码，点击非第一张进入TabView的时候，会默认给第一个cell渲染，然后跳转到点击的cell。这样的结果会导致第一个cell只得到缩略图。
                 // guard previewImage == UIImage() else { return }
                 
-                let requestOptions = PHImageRequestOptions()
-                requestOptions.deliveryMode = .opportunistic
-                requestOptions.isSynchronous = false
-                requestOptions.resizeMode = .fast
-                requestOptions.isNetworkAccessAllowed = true
-                
-                async let stream = AlbumService.shared.asyncImage(from: asset, size: ImageSize.large.size, requestOptions: requestOptions)
+                async let stream = AlbumService.asyncImage(from: asset, size: ImageSize.large.size, requestOptions: .defaultImageRequestOptions())
                 do {
                     for try await image in await stream {
                         previewImage = image

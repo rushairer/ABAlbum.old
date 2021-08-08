@@ -14,13 +14,14 @@ import Photos
 ///
 /// ```swift
 ///
-///  @State var showsAlbumNoPermissionView: Bool = AlbumService.shared.isNotDetermined
+///  @State var showsAlbumNoPermissionView: Bool = AlbumAuthorizationStatus.isNotDetermined
 ///
 ///  var body: some View {
 ///     AlbumPage()
 ///         .showsNoPermissionView($showsAlbumNoPermissionView)
+///         .albumFetchOptions(.collectionFetchOptions(with: .image))
 ///         .task {
-///             showsAlbumNoPermissionView = await !AlbumService.shared.hasAlbumPermission
+///             showsAlbumNoPermissionView = await !AlbumAuthorizationStatus.hasAlbumPermission
 ///         }
 ///  }
 ///
@@ -32,6 +33,9 @@ public struct AlbumPage: View {
     public var body: some View {
         AlbumSelectorGridView()
     }
+}
+
+extension AlbumPage {
     
     /// Show the NoPermissionView.
     /// - Parameter showsAlbumNoPermissionView: Binding<Bool>

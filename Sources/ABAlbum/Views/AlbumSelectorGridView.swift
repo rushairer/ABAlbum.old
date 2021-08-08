@@ -10,15 +10,12 @@ import Photos
 
 struct AlbumSelectorGridView: View {
     @Environment(\.albumChangeObserver) var albumChangeObserver: AlbumChangeObserver
+    @Environment(\.albumFetchOptions) var albumFetchOptions: PHFetchOptions
     
     @State private var allAssetCollections: [PHAssetCollection] = []
     
-    private let maxColumn: CGFloat = 2
+    private let maxColumn: Int = 2
     private let gridSpacing: CGFloat = 8
-    
-    private func gridWidth(screenSize: CGSize) -> CGFloat {
-        return floor((min(screenSize.width, screenSize.height) - gridSpacing * (maxColumn + 1)) / maxColumn)
-    }
     
     private var albumEmptyView: some View {
         AlbumEmptyView()
@@ -28,27 +25,20 @@ struct AlbumSelectorGridView: View {
     
     var body: some View {
         func internalView(geometry: GeometryProxy) -> some View {
-            let width = gridWidth(screenSize: geometry.size)
-            let scale = Screen.main.scale
-            let size = CGSize(width: width, height: width)
-            let thumbnailSize = CGSize(width: width * scale, height: width * scale)
-            let requestOptions = PHImageRequestOptions()
-            requestOptions.deliveryMode = .opportunistic
-            requestOptions.isSynchronous = false
-            requestOptions.resizeMode = .fast
-            requestOptions.isNetworkAccessAllowed = true
+            let size = geometry.gridCellSize(number: maxColumn, spacing: gridSpacing)
+            let thumbnailSize = size.screenScaledSize()
             
             return ScrollView(.vertical) {
                 LazyVGrid(columns: [
-                    GridItem(.adaptive(minimum: width,
-                                       maximum: width),
+                    GridItem(.adaptive(minimum: size.width,
+                                       maximum: size.width),
                              spacing: gridSpacing)
                 ]) {
                     ForEach(allAssetCollections, id: \.localIdentifier) { album in
                         NavigationLink(destination: AlbumGridView(album: album)) {
                             if album.assetsResult?.firstObject != nil {
                                 AlbumSelectorGridCellView(asset: album.assetsResult!.firstObject!, size: size, thumbnailSize: thumbnailSize, title: album.localizedTitle, count: album.assetsResult?.count)
-                                    .frame(width: width, height: width)
+                                    .frame(width: size.width, height: size.width)
                             }
                         }
                         .accentColor(Color(uiColor: .label))
@@ -60,13 +50,17 @@ struct AlbumSelectorGridView: View {
         }
         
         return GeometryReader(content: internalView(geometry:))
+            .onAppear {
+                requestAssetCollections()
+            }
             .onReceive(albumChangeObserver.$changeInstance) { changeInstance in
+                guard changeInstance != nil else { return }
                 refreshAssetCollections()
             }
     }
     
     func requestAssetCollections() {
-        allAssetCollections = AlbumService.shared.allAssetCollections
+        allAssetCollections = AlbumService.allAssetCollections(with: albumFetchOptions)
     }
     
     func refreshAssetCollections() {

@@ -6,13 +6,13 @@ Customized album and camera interface with SwiftUI.
 
 You can get the code from those links:
 
+[https://github.com/rushairer/ABAlbum](https://github.com/rushairer/ABAlbum)
 ```shell
-// Get ABAlbum from https://github.com/rushairer/ABAlbum
 git clone https://github.com/rushairer/ABAlbum.git
+```
 
-//or
-
-// Get Example with ABAlbum from https://github.com/rushairer/ABAlbumExample
+[https://github.com/rushairer/ABAlbumExample](https://github.com/rushairer/ABAlbumExample)
+```shell
 git clone --recurse-submodules https://github.com/rushairer/ABAlbumExample.git
 ```
 
@@ -26,7 +26,7 @@ git clone --recurse-submodules https://github.com/rushairer/ABAlbumExample.git
 ### Album
 
 - ``AlbumPage``
-- ``AlbumService``
+- ``AlbumAuthorizationStatus``
 - ``AlbumError``
 - ``MediaType``
 

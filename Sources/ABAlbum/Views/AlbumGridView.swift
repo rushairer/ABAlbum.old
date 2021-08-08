@@ -12,7 +12,7 @@ struct AlbumGridView: View {
     
     @State var album: PHAssetCollection
     
-    private let maxColumn: CGFloat = 4
+    private let maxColumn: Int = 4
     private let gridSpacing: CGFloat = 8
     
     /// 显示遮挡
@@ -22,11 +22,7 @@ struct AlbumGridView: View {
     @State private var thumbnailOpacity: Double = 1
     
     /// 点击时跳转
-    @State private var currentAssetLocalIdentifier: String? {
-        didSet {
-            print(currentAssetLocalIdentifier)
-        }
-    }
+    @State private var currentAssetLocalIdentifier: String? 
     
     /// 激活图片所在区域
     @State private var thumbnailReact: CGRect = .zero
@@ -41,10 +37,6 @@ struct AlbumGridView: View {
     
     @State private var thumbnailImage: UIImage?
     
-    private func gridWidth(screenSize: CGSize) -> CGFloat {
-        return floor((min(screenSize.width, screenSize.height) - gridSpacing * (maxColumn + 1)) / maxColumn)
-    }
-    
     @MainActor
     private func updateThumbnailImage(image: UIImage) {
         thumbnailImage = image
@@ -52,21 +44,14 @@ struct AlbumGridView: View {
     
     var body: some View {
         func internalView(geometry: GeometryProxy) -> some View {
-            let width = gridWidth(screenSize: geometry.size)
-            let scale = Screen.main.scale
-            let size = CGSize(width: width, height: width)
-            let thumbnailSize = CGSize(width: width * scale, height: width * scale)
-            let requestOptions = PHImageRequestOptions()
-            requestOptions.deliveryMode = .opportunistic
-            requestOptions.isSynchronous = false
-            requestOptions.resizeMode = .fast
-            requestOptions.isNetworkAccessAllowed = true
+            let size = geometry.gridCellSize(number: maxColumn, spacing: gridSpacing)
+            let thumbnailSize = size.screenScaledSize()
             
             return ScrollViewReader { scrollViewProxy in
                 ZStack(alignment: .topLeading) {
                     ScrollView(.vertical) {
                         LazyVGrid(columns: [
-                            GridItem(.adaptive(minimum: width, maximum: width), spacing: gridSpacing)
+                            GridItem(.adaptive(minimum: size.width, maximum: size.width), spacing: gridSpacing)
                         ]) {
                             ForEach(0..<(album.assetsResult?.count ?? 0)) { index in
                                 GeometryReader { proxy in
@@ -83,7 +68,7 @@ struct AlbumGridView: View {
                                         AlbumGridCellView(asset: album.assetsResult!.object(at: index),
                                                           size: size,
                                                           thumbnailSize: thumbnailSize,
-                                                          requestOptions: requestOptions)
+                                                          requestOptions: .defaultImageRequestOptions())
                                             .onTapGesture {
                                                 currentAssetLocalIdentifier = album.assetsResult!.object(at: index).localIdentifier
                                             }
@@ -94,7 +79,7 @@ struct AlbumGridView: View {
                                                         ])
                                     }
                                 }
-                                .frame(width: width, height: width)
+                                .frame(width: size.width, height: size.width)
                                 .id(album.assetsResult!.object(at: index).localIdentifier)
                             }
                         }
@@ -133,9 +118,9 @@ struct AlbumGridView: View {
                         let assetResult: PHFetchResult<PHAsset> = PHAsset.fetchAssets(withLocalIdentifiers: [thumbnailIdentifier!],
                                                                                       options: nil)
                         if assetResult.count > 0 {
-                            async let stream = AlbumService.shared.asyncImage(from: assetResult.firstObject!,
+                            async let stream = AlbumService.asyncImage(from: assetResult.firstObject!,
                                                                               size: geometry.size,
-                                                                              requestOptions: nil)
+                                                                       requestOptions: .defaultImageRequestOptions())
                             do {
                                 for try await image in await stream {
                                     await updateThumbnailImage(image: image)

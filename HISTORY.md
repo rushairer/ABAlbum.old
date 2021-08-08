@@ -1,7 +1,12 @@
 # 0.1.0
+`2021-08-08`
+### Changed
+    - Change PHAuthorizationStatus management to PHAuthorizationStatus.
+    
 `2021-08-06`
 ### Fixed
     - Fix that: the with of toolbar is too larget in iPhone SE.
+    
 `2021-08-03`
 ### Added
     - Add Preview TabView list.
