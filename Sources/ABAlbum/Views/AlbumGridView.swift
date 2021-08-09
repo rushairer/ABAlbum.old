@@ -43,8 +43,8 @@ struct AlbumGridView: View {
     }
     
     var body: some View {
-        func internalView(geometry: GeometryProxy) -> some View {
-            let size = geometry.gridCellSize(number: maxColumn, spacing: gridSpacing)
+        func internalView(geometryProxy: GeometryProxy) -> some View {
+            let size = geometryProxy.gridCellSize(number: maxColumn, spacing: gridSpacing)
             let thumbnailSize = size.screenScaledSize()
             
             return ScrollViewReader { scrollViewProxy in
@@ -119,7 +119,7 @@ struct AlbumGridView: View {
                                                                                       options: nil)
                         if assetResult.count > 0 {
                             async let stream = AlbumService.asyncImage(from: assetResult.firstObject!,
-                                                                              size: geometry.size,
+                                                                              size: geometryProxy.size,
                                                                        requestOptions: .defaultImageRequestOptions())
                             do {
                                 for try await image in await stream {
@@ -145,14 +145,14 @@ struct AlbumGridView: View {
                     thumbnailOpacity = 1
                     maskReact = .zero
                     
-                    thumbnailReact = geometry.frame(in: .global)
+                    thumbnailReact = geometryProxy.frame(in: .global)
                     thumbnailReact.origin.x = thumbnailReact.size.width
                     thumbnailImage = nil
                 }
                 .navigationTitle(album.localizedTitle ?? "Untitled")
             }
         }
-        return GeometryReader(content: internalView(geometry:))
+        return GeometryReader(content: internalView(geometryProxy:))
     }
 }
 

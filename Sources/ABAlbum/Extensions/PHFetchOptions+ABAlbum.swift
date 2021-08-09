@@ -18,8 +18,12 @@ extension PHFetchOptions {
     /// - Parameter mediaType: The MediaType of collection you want to fetch.
     /// - Returns: The PHFetchOptions.
     public class func collectionFetchOptions(with mediaType: MediaType) -> PHFetchOptions {
-        return PHFetchOptions(predicate: NSPredicate(format: "mediaType == %ld", mediaType.rawValue),
-                              sortDescriptors: [NSSortDescriptor(key: "creationDate", ascending: false)])
+        if mediaType.rawValue != PHAssetMediaType.unknown.rawValue {
+            return PHFetchOptions(predicate: NSPredicate(format: "mediaType == %ld", mediaType.rawValue),
+                                  sortDescriptors: [NSSortDescriptor(key: "creationDate", ascending: false)])
+        } else {
+            return PHFetchOptions(predicate: nil, sortDescriptors: [NSSortDescriptor(key: "creationDate", ascending: false)])
+        }
     }
     
     convenience init(predicate: NSPredicate?, sortDescriptors: [NSSortDescriptor]?) {

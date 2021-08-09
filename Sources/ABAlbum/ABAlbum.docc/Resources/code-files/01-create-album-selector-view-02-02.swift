@@ -11,8 +11,8 @@ struct AlbumSelectorGridView: View {
     }
     
     var body: some View {
-        func internalView(geometry: GeometryProxy) -> some View {
-            let width = gridWidth(screenSize: geometry.size)
+        func internalView(geometryProxy: GeometryProxy) -> some View {
+            let width = gridWidth(screenSize: geometryProxy.size)
 
             return ScrollView(.vertical) {
                 LazyVGrid(columns: [
@@ -25,7 +25,7 @@ struct AlbumSelectorGridView: View {
                 }
             }
         }
-        return GeometryReader(content: internalView(geometry:))
+        return GeometryReader(content: internalView(geometryProxy:))
     }
 }
 

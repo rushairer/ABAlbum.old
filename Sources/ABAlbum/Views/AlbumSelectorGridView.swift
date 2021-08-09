@@ -24,8 +24,8 @@ struct AlbumSelectorGridView: View {
     }
     
     var body: some View {
-        func internalView(geometry: GeometryProxy) -> some View {
-            let size = geometry.gridCellSize(number: maxColumn, spacing: gridSpacing)
+        func internalView(geometryProxy: GeometryProxy) -> some View {
+            let size = geometryProxy.gridCellSize(number: maxColumn, spacing: gridSpacing)
             let thumbnailSize = size.screenScaledSize()
             
             return ScrollView(.vertical) {
@@ -49,7 +49,7 @@ struct AlbumSelectorGridView: View {
             .navigationTitle("Albums")
         }
         
-        return GeometryReader(content: internalView(geometry:))
+        return GeometryReader(content: internalView(geometryProxy:))
             .onAppear {
                 requestAssetCollections()
             }
