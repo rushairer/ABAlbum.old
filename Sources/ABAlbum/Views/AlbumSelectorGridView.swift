@@ -25,8 +25,8 @@ struct AlbumSelectorGridView: View {
     
     var body: some View {
         func internalView(geometryProxy: GeometryProxy) -> some View {
-            let size = geometryProxy.gridCellSize(number: maxColumn, spacing: gridSpacing)
-            let thumbnailSize = size.screenScaledSize()
+            @CellSize(number: maxColumn, spacing: gridSpacing) var size: CGSize = geometryProxy.size
+            @ScreenScaledSize var thumbnailSize:CGSize = size
             
             return ScrollView(.vertical) {
                 LazyVGrid(columns: [

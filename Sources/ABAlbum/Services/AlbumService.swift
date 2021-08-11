@@ -27,7 +27,7 @@ struct AlbumService {
         PHPhotoLibrary.shared().unregisterChangeObserver(observer)
     }
     
-    static func allAssetCollections(with fetchOptions: PHFetchOptions = .defaultCollectionFetchOptions()) -> [PHAssetCollection] {
+    static func allAssetCollections(with fetchOptions: PHFetchOptions) -> [PHAssetCollection] {
         guard AlbumAuthorizationStatus.isDetermined else {
             return []
         }

@@ -37,6 +37,8 @@ struct AlbumGridView: View {
     
     @State private var thumbnailImage: UIImage?
     
+    @DefaultImageRequestOptions private var defaultImageRequestOptions: PHImageRequestOptions
+    
     @MainActor
     private func updateThumbnailImage(image: UIImage) {
         thumbnailImage = image
@@ -44,8 +46,8 @@ struct AlbumGridView: View {
     
     var body: some View {
         func internalView(geometryProxy: GeometryProxy) -> some View {
-            let size = geometryProxy.gridCellSize(number: maxColumn, spacing: gridSpacing)
-            let thumbnailSize = size.screenScaledSize()
+            @CellSize(number: maxColumn, spacing: gridSpacing) var size: CGSize = geometryProxy.size
+            @ScreenScaledSize var thumbnailSize:CGSize = size
             
             return ScrollViewReader { scrollViewProxy in
                 ZStack(alignment: .topLeading) {
@@ -68,7 +70,7 @@ struct AlbumGridView: View {
                                         AlbumGridCellView(asset: album.assetsResult!.object(at: index),
                                                           size: size,
                                                           thumbnailSize: thumbnailSize,
-                                                          requestOptions: .defaultImageRequestOptions())
+                                                          requestOptions: defaultImageRequestOptions)
                                             .onTapGesture {
                                                 currentAssetLocalIdentifier = album.assetsResult!.object(at: index).localIdentifier
                                             }
@@ -120,7 +122,7 @@ struct AlbumGridView: View {
                         if assetResult.count > 0 {
                             async let stream = AlbumService.asyncImage(from: assetResult.firstObject!,
                                                                               size: geometryProxy.size,
-                                                                       requestOptions: .defaultImageRequestOptions())
+                                                                       requestOptions: defaultImageRequestOptions)
                             do {
                                 for try await image in await stream {
                                     await updateThumbnailImage(image: image)
