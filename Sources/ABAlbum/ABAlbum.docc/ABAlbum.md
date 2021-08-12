@@ -27,7 +27,7 @@ git clone --recurse-submodules https://github.com/rushairer/ABAlbumExample.git
 
 - ``AlbumPage``
 - ``AlbumAuthorizationStatus``
-- ``AlbumError``
+- ``AlbumFetchOptions``
 - ``MediaType``
 
 

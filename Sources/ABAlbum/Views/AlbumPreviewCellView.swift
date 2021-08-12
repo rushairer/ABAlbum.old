@@ -11,10 +11,18 @@ import ZoomableImageView
 
 struct AlbumPreviewCellView: View {
     var asset: PHAsset
-    @State private var scale: CGFloat = 1.0
-    @State private var lastScaleValue: CGFloat = 1.0
+    
     @State private var previewImage: UIImage =  UIImage()
     
+    @DateFormatDate private var dateValue: Date?
+    @TimeFormatDate private var timeValue: Date?
+    
+    init(asset: PHAsset) {
+        self.asset = asset
+        dateValue = asset.creationDate
+        timeValue = asset.creationDate
+    }
+
 #if DEBUG
     @State private var errorMsg: String?
 #endif
@@ -33,8 +41,8 @@ struct AlbumPreviewCellView: View {
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     VStack {
-                        Text("\(asset.creationDate?.dateStringValue ?? "")")
-                        Text("\(asset.creationDate?.timeStringValue ?? "")").font(.caption)
+                        Text($dateValue)
+                        Text($timeValue).font(.caption)
                     }
                 }
             }
@@ -43,7 +51,7 @@ struct AlbumPreviewCellView: View {
                 // 如果保留以下代码，点击非第一张进入TabView的时候，会默认给第一个cell渲染，然后跳转到点击的cell。这样的结果会导致第一个cell只得到缩略图。
                 // guard previewImage == UIImage() else { return }
                 
-                async let stream = AlbumService.asyncImage(from: asset, size: ImageSize.large.size, requestOptions: .defaultImageRequestOptions())
+                async let stream = AlbumService.asyncImage(from: asset, size: ImageSize.large.size, requestOptions: ImageFetchOptions.fetchOptions())
                 do {
                     for try await image in await stream {
                         previewImage = image

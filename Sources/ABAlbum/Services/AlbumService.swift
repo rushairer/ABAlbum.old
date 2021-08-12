@@ -10,7 +10,7 @@ import Photos
 
 /// Get collections and assets.
 struct AlbumService {
-   
+    
     static let imageManager = PHCachingImageManager()
     
     /// Register the PHPhotoLibraryChangeObserver, if PHAuthorizationStatus is .notDetermined will be skipped.
@@ -27,7 +27,7 @@ struct AlbumService {
         PHPhotoLibrary.shared().unregisterChangeObserver(observer)
     }
     
-    static func allAssetCollections(with fetchOptions: PHFetchOptions = .defaultCollectionFetchOptions()) -> [PHAssetCollection] {
+    static func allAlbums(with fetchOptions: PHFetchOptions) -> [Album] {
         guard AlbumAuthorizationStatus.isDetermined else {
             return []
         }
@@ -36,28 +36,29 @@ struct AlbumService {
         let userAlbums = PHCollectionList.fetchTopLevelUserCollections(with: nil) as! PHFetchResult<PHAssetCollection>
         let allAlbums: [PHFetchResult<PHAssetCollection>] = [smartAlbums, userAlbums]
         
-        var albumCollections: [PHAssetCollection] = []
+        var albums: [Album] = []
         allAlbums.forEach { fetchResult in
             fetchResult.enumerateObjects { (collection, _, _) in
                 guard collection.isKind(of: PHAssetCollection.self) else { return }
                 guard collection.estimatedAssetCount > 0 else { return }
                 guard collection.assetCollectionSubtype.rawValue != 1000000201
                         && collection.assetCollectionSubtype != PHAssetCollectionSubtype.smartAlbumAllHidden else { return }
-                collection.fetchOptions = fetchOptions
                 
-                guard let resut = collection.assetsResult,
+                var album = Album(assetCollection: collection)
+                album.fetchAssets(with: fetchOptions)
+                
+                guard let resut = album.assetsResult,
                       resut.count > 0 else { return }
-                
                 if collection.assetCollectionSubtype == PHAssetCollectionSubtype.smartAlbumUserLibrary {
-                    albumCollections.insert(collection, at: 0)
+                    albums.insert(album, at: 0)
                 } else if collection.localizedTitle == Bundle.main.object(forInfoDictionaryKey: kCFBundleNameKey as String) as? String {
-                    albumCollections.insert(collection, at: (albumCollections.count > 0 ? 1 : 0))
+                    albums.insert(album, at: (albums.count > 0 ? 1 : 0))
                 } else {
-                    albumCollections.append(collection)
+                    albums.append(album)
                 }
             }
         }
-        return albumCollections
+        return albums
     }
     
     static func startCachingImages(for assets: [PHAsset], size: CGSize, requestOptions: PHImageRequestOptions?) {

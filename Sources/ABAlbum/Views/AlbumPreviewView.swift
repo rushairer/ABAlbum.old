@@ -12,7 +12,7 @@ struct AlbumPreviewView: View {
     //@State var currentAssetLocalIdentifier: String?
     //var currentAssetLocalIdentifier: Binding<String?>
     @Binding var currentAssetLocalIdentifier: String?
-    var album: PHAssetCollection
+    var album: Album
     var onIndexChange: ((String?) -> Void)?
     
     var toolBar: some View {
@@ -105,6 +105,6 @@ struct AlbumPreviewView: View {
 
 struct AlbumPreviewView_Previews: PreviewProvider {
     static var previews: some View {
-        AlbumPreviewView(currentAssetLocalIdentifier: .constant(""), album: PHAssetCollection())
+        AlbumPreviewView(currentAssetLocalIdentifier: .constant(""), album: Album(assetCollection: PHAssetCollection()))
     }
 }

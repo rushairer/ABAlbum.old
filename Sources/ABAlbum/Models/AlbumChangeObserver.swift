@@ -41,3 +41,4 @@ extension EnvironmentValues {
 private struct AlbumChangeObserverKey: EnvironmentKey {
     static let defaultValue: AlbumChangeObserver = AlbumChangeObserver()
 }
+

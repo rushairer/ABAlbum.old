@@ -12,7 +12,7 @@ struct AlbumSelectorGridView: View {
     @Environment(\.albumChangeObserver) var albumChangeObserver: AlbumChangeObserver
     @Environment(\.albumFetchOptions) var albumFetchOptions: PHFetchOptions
     
-    @State private var allAssetCollections: [PHAssetCollection] = []
+    @State private var allAlbums: [Album] = []
     
     private let maxColumn: Int = 2
     private let gridSpacing: CGFloat = 8
@@ -25,8 +25,8 @@ struct AlbumSelectorGridView: View {
     
     var body: some View {
         func internalView(geometryProxy: GeometryProxy) -> some View {
-            let size = geometryProxy.gridCellSize(number: maxColumn, spacing: gridSpacing)
-            let thumbnailSize = size.screenScaledSize()
+            @CellSize(number: maxColumn, spacing: gridSpacing) var size: CGSize = geometryProxy.size
+            @ScreenScaledSize var thumbnailSize:CGSize = size
             
             return ScrollView(.vertical) {
                 LazyVGrid(columns: [
@@ -34,10 +34,10 @@ struct AlbumSelectorGridView: View {
                                        maximum: size.width),
                              spacing: gridSpacing)
                 ]) {
-                    ForEach(allAssetCollections, id: \.localIdentifier) { album in
+                    ForEach(allAlbums, id: \.localIdentifier) { album in
                         NavigationLink(destination: AlbumGridView(album: album)) {
                             if album.assetsResult?.firstObject != nil {
-                                AlbumSelectorGridCellView(asset: album.assetsResult!.firstObject!, size: size, thumbnailSize: thumbnailSize, title: album.localizedTitle, count: album.assetsResult?.count)
+                                AlbumSelectorGridCellView(asset: album.assetsResult!.firstObject!, size: size, thumbnailSize: thumbnailSize, title: album.title, count: album.assetsResult?.count)
                                     .frame(width: size.width, height: size.width)
                             }
                         }
@@ -45,27 +45,27 @@ struct AlbumSelectorGridView: View {
                     }
                 }
             }
-            .overlay(AlbumEmptyView().opacity(allAssetCollections.count > 0 ? 0 : 1))
+            .overlay(AlbumEmptyView().opacity(allAlbums.count > 0 ? 0 : 1))
             .navigationTitle("Albums")
         }
         
         return GeometryReader(content: internalView(geometryProxy:))
             .onAppear {
-                requestAssetCollections()
+                requestAlbums()
             }
             .onReceive(albumChangeObserver.$changeInstance) { changeInstance in
                 guard changeInstance != nil else { return }
-                refreshAssetCollections()
+                refreshAlbums()
             }
     }
     
-    func requestAssetCollections() {
-        allAssetCollections = AlbumService.allAssetCollections(with: albumFetchOptions)
+    func requestAlbums() {
+        allAlbums = AlbumService.allAlbums(with: albumFetchOptions)
     }
     
-    func refreshAssetCollections() {
-        allAssetCollections = []
-        requestAssetCollections()
+    func refreshAlbums() {
+        allAlbums = []
+        requestAlbums()
     }
 }
 

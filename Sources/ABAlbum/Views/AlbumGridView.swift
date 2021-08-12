@@ -10,7 +10,7 @@ import Photos
 
 struct AlbumGridView: View {
     
-    @State var album: PHAssetCollection
+    @State var album: Album
     
     private let maxColumn: Int = 4
     private let gridSpacing: CGFloat = 8
@@ -44,8 +44,8 @@ struct AlbumGridView: View {
     
     var body: some View {
         func internalView(geometryProxy: GeometryProxy) -> some View {
-            let size = geometryProxy.gridCellSize(number: maxColumn, spacing: gridSpacing)
-            let thumbnailSize = size.screenScaledSize()
+            @CellSize(number: maxColumn, spacing: gridSpacing) var size: CGSize = geometryProxy.size
+            @ScreenScaledSize var thumbnailSize:CGSize = size
             
             return ScrollViewReader { scrollViewProxy in
                 ZStack(alignment: .topLeading) {
@@ -68,7 +68,7 @@ struct AlbumGridView: View {
                                         AlbumGridCellView(asset: album.assetsResult!.object(at: index),
                                                           size: size,
                                                           thumbnailSize: thumbnailSize,
-                                                          requestOptions: .defaultImageRequestOptions())
+                                                          requestOptions: ImageFetchOptions.fetchOptions())
                                             .onTapGesture {
                                                 currentAssetLocalIdentifier = album.assetsResult!.object(at: index).localIdentifier
                                             }
@@ -120,7 +120,7 @@ struct AlbumGridView: View {
                         if assetResult.count > 0 {
                             async let stream = AlbumService.asyncImage(from: assetResult.firstObject!,
                                                                               size: geometryProxy.size,
-                                                                       requestOptions: .defaultImageRequestOptions())
+                                                                       requestOptions: ImageFetchOptions.fetchOptions())
                             do {
                                 for try await image in await stream {
                                     await updateThumbnailImage(image: image)
@@ -149,7 +149,7 @@ struct AlbumGridView: View {
                     thumbnailReact.origin.x = thumbnailReact.size.width
                     thumbnailImage = nil
                 }
-                .navigationTitle(album.localizedTitle ?? "Untitled")
+                .navigationTitle(album.title)
             }
         }
         return GeometryReader(content: internalView(geometryProxy:))
@@ -188,6 +188,6 @@ struct CellFramePreferenceKey: PreferenceKey {
 
 struct AlbumGridView_Previews: PreviewProvider {
     static var previews: some View {
-        AlbumGridView(album: PHAssetCollection())
+        AlbumGridView(album: Album(assetCollection: PHAssetCollection()))
     }
 }

@@ -19,7 +19,7 @@ import Photos
 ///  var body: some View {
 ///     AlbumPage()
 ///         .showsNoPermissionView($showsAlbumNoPermissionView)
-///         .albumFetchOptions(.collectionFetchOptions(with: .image))
+///         .albumFetchOptions(AlbumFetchOptions.fetchOptions(with: mediaType))
 ///         .task {
 ///             showsAlbumNoPermissionView = await !AlbumAuthorizationStatus.hasAlbumPermission
 ///         }
@@ -48,16 +48,13 @@ extension AlbumPage {
         @Binding var showsAlbumNoPermissionView: Bool
         
         func body(content: Content) -> some View {
-            if showsAlbumNoPermissionView {
-                content
-                    .overlay(
-                        AlbumNoPermissionView()
-                            .frame(maxWidth: .infinity, maxHeight: .infinity)
-                            .background(.background)
-                    )
-            } else {
-                content
-            }
+            content
+                .overlay(
+                    AlbumNoPermissionView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(.background)
+                        .opacity(showsAlbumNoPermissionView ? 1 : 0)
+                )
         }
     }
 }
