@@ -113,7 +113,7 @@ struct AlbumService {
                         case .cancelled:
                             let requestIDKey = info[PHImageResultRequestIDKey] as! PHImageRequestID
                             DispatchQueue.global(qos: .userInteractive).async {
-                                PHCachingImageManager.default().cancelImageRequest(requestIDKey)
+                                AlbumService.imageManager.cancelImageRequest(requestIDKey)
                             }
                         default: break
                         }

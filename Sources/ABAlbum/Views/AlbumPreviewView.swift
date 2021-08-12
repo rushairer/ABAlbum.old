@@ -9,9 +9,8 @@ import SwiftUI
 import Photos
 
 struct AlbumPreviewView: View {
-    //@State var currentAssetLocalIdentifier: String?
-    //var currentAssetLocalIdentifier: Binding<String?>
-    @Binding var currentAssetLocalIdentifier: String?
+    @State var currentAssetLocalIdentifier: String?
+    
     var album: Album
     var onIndexChange: ((String?) -> Void)?
     
@@ -105,6 +104,6 @@ struct AlbumPreviewView: View {
 
 struct AlbumPreviewView_Previews: PreviewProvider {
     static var previews: some View {
-        AlbumPreviewView(currentAssetLocalIdentifier: .constant(""), album: Album(assetCollection: PHAssetCollection()))
+        AlbumPreviewView(currentAssetLocalIdentifier: "", album: Album(assetCollection: PHAssetCollection()))
     }
 }

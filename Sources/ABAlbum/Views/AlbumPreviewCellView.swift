@@ -37,7 +37,6 @@ struct AlbumPreviewCellView: View {
                     ProgressView()
                 }
             }
-            //.navigationTitle(asset.creationDate?.stringValue ?? "")
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     VStack {
@@ -47,9 +46,7 @@ struct AlbumPreviewCellView: View {
                 }
             }
             .task {
-                // fix: 去掉缓存判断，每次加载cell时候都要重新请求图片。
-                // 如果保留以下代码，点击非第一张进入TabView的时候，会默认给第一个cell渲染，然后跳转到点击的cell。这样的结果会导致第一个cell只得到缩略图。
-                // guard previewImage == UIImage() else { return }
+                //guard previewImage == UIImage() else { return }
                 
                 async let stream = AlbumService.asyncImage(from: asset, size: ImageSize.large.size, requestOptions: ImageFetchOptions.fetchOptions())
                 do {
@@ -65,8 +62,7 @@ struct AlbumPreviewCellView: View {
                 }
             }
             .onDisappear {
-                // 点击非第一个cell时，第一个cell会渲染，然后跳转到点击cell，并没有触发onDisappear。
-                previewImage = UIImage()
+                // previewImage = UIImage()
             }
         }
     }

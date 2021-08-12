@@ -57,6 +57,9 @@ struct AlbumSelectorGridView: View {
                 guard changeInstance != nil else { return }
                 refreshAlbums()
             }
+            .onDisappear {
+                clearAlbum()
+            }
     }
     
     func requestAlbums() {
@@ -64,8 +67,12 @@ struct AlbumSelectorGridView: View {
     }
     
     func refreshAlbums() {
-        allAlbums = []
+        allAlbums.removeAll()
         requestAlbums()
+    }
+    
+    func clearAlbum() {
+        allAlbums.removeAll()
     }
 }
 
