@@ -20,6 +20,21 @@ struct AlbumGridCellView: View {
 #if DEBUG
     @State private var errorMsg: String?
 #endif
+    
+    /*
+    init(asset: PHAsset, size: CGSize, thumbnailSize: CGSize, requestOptions: PHImageRequestOptions? = nil) {
+        self.asset = asset
+        self.size = size
+        self.thumbnailSize = thumbnailSize
+        self.requestOptions = requestOptions
+        
+        AlbumService.startCachingImages(for: [asset], size: thumbnailSize, requestOptions: requestOptions)
+        
+        defer {
+            AlbumService.stopCachingImages(for: [asset], size: thumbnailSize, requestOptions: requestOptions)
+        }
+    }
+     */
 
     var body: some View {
         ZStack {

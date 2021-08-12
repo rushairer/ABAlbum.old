@@ -7,12 +7,12 @@
 
 import SwiftUI
 import Photos
+import Combine
 
 struct AlbumPreviewView: View {
-    @State var currentAssetLocalIdentifier: String?
+    @Environment(\.albumViewModel) var albumViewModel: AlbumViewModel
     
     var album: Album
-    var onIndexChange: ((String?) -> Void)?
     
     var toolBar: some View {
         VStack {
@@ -79,11 +79,18 @@ struct AlbumPreviewView: View {
         ZStack(alignment: .bottom) {
             GeometryReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
-                    TabView(selection: $currentAssetLocalIdentifier) {
+                    /// @Environment unlike @StateObject, can not using $albumViewModel.$currentAssetLocalIdentifier.
+                    TabView(selection: .init(get: {
+                        albumViewModel.currentAssetLocalIdentifier
+                    }, set: { id in
+                        albumViewModel.currentAssetLocalIdentifier = id
+                    })) {
                         ForEach(0..<(album.assetsResult?.count ?? 0)) { index in
+                            /// 防止循环引用
+                            let localIdentifier = album.assetsResult?.object(at: index).localIdentifier
                             AlbumPreviewCellView(asset: album.assetsResult!.object(at: index))
                                 .padding(.trailing, 6)
-                                .tag(album.assetsResult?.object(at: index).localIdentifier)
+                                .tag(localIdentifier)
                         }
                     }
                     .frame(width: proxy.size.width, height: proxy.size.height)
@@ -95,15 +102,11 @@ struct AlbumPreviewView: View {
             toolBar
         }
         .navigationBarTitleDisplayMode(.inline)
-        .onReceive(currentAssetLocalIdentifier.publisher) { index in
-            guard onIndexChange != nil else { return }
-            onIndexChange!(index)
-        }
     }
 }
 
 struct AlbumPreviewView_Previews: PreviewProvider {
     static var previews: some View {
-        AlbumPreviewView(currentAssetLocalIdentifier: "", album: Album(assetCollection: PHAssetCollection()))
+        AlbumPreviewView(album: Album(assetCollection: PHAssetCollection()))
     }
 }

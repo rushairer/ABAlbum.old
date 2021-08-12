@@ -1,4 +1,9 @@
 # 0.1.1
+
+`2021-08-13`
+### Changed
+    - Performance optimization.
+    
 `2021-08-12`
 ### Changed
     - Change Extensions to PropertyWrappers.

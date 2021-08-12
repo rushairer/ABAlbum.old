@@ -9,8 +9,9 @@ import SwiftUI
 import Photos
 
 struct AlbumSelectorGridView: View {
-    @Environment(\.albumChangeObserver) var albumChangeObserver: AlbumChangeObserver
     @Environment(\.albumFetchOptions) var albumFetchOptions: PHFetchOptions
+    
+    @StateObject var albumChangeViewModel: AlbumChangeViewModel = AlbumChangeViewModel()
     
     @State private var allAlbums: [Album] = []
     
@@ -53,8 +54,8 @@ struct AlbumSelectorGridView: View {
             .onAppear {
                 requestAlbums()
             }
-            .onReceive(albumChangeObserver.$changeInstance) { changeInstance in
-                guard changeInstance != nil else { return }
+            .onReceive(albumChangeViewModel.$albumChange) { albumChange in
+                guard albumChange.changeInstance != nil else { return }
                 refreshAlbums()
             }
             .onDisappear {

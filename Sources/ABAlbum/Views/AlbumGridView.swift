@@ -10,7 +10,10 @@ import Photos
 
 struct AlbumGridView: View {
     
+    @Environment(\.albumViewModel) var albumViewModel: AlbumViewModel
+    
     @State var album: Album
+    @State var showsPreviwView: Bool = false
     
     private let maxColumn: Int = 4
     private let gridSpacing: CGFloat = 8
@@ -22,31 +25,39 @@ struct AlbumGridView: View {
             
             return ScrollViewReader { scrollViewProxy in
                 ZStack(alignment: .topLeading) {
+                    NavigationLink(isActive: $showsPreviwView,
+                                   destination: {
+                        AlbumPreviewView(album: album)
+                    }) {
+                        EmptyView()
+                    }
                     ScrollView(.vertical) {
                         LazyVGrid(columns: [
                             GridItem(.adaptive(minimum: size.width, maximum: size.width), spacing: gridSpacing)
                         ]) {
                             ForEach(0..<(album.assetsResult?.count ?? 0)) { index in
+                                /// 防止循环引用
+                                let localIdentifier: String = album.assetsResult!.object(at: index).localIdentifier
                                 GeometryReader { proxy in
-                                    NavigationLink(destination: {
-                                        AlbumPreviewView(currentAssetLocalIdentifier: album.assetsResult!.object(at: index).localIdentifier,
-                                                         album: album) { index in
-                                            guard let index = index else { return }
-                                            scrollViewProxy.scrollTo(index)
+                                    AlbumGridCellView(asset: album.assetsResult!.object(at: index),
+                                                      size: size,
+                                                      thumbnailSize: thumbnailSize,
+                                                      requestOptions: ImageFetchOptions.fetchOptions())
+                                        .onTapGesture {
+                                            albumViewModel.currentAssetLocalIdentifier = localIdentifier
+                                            showsPreviwView = true
                                         }
-                                    }) {
-                                        AlbumGridCellView(asset: album.assetsResult!.object(at: index),
-                                                          size: size,
-                                                          thumbnailSize: thumbnailSize,
-                                                          requestOptions: ImageFetchOptions.fetchOptions())
-                                    }
                                 }
                                 .frame(width: size.width, height: size.width)
-                                .id(album.assetsResult!.object(at: index).localIdentifier)
+                                .id(localIdentifier)
                             }
                         }
                     }
                     .coordinateSpace(name: "ScrollView")
+                }
+                .onReceive(albumViewModel.$currentAssetLocalIdentifier) { currentAssetLocalIdentifier in
+                    guard let currentAssetLocalIdentifier = currentAssetLocalIdentifier else { return }
+                    scrollViewProxy.scrollTo(currentAssetLocalIdentifier)
                 }
                 .navigationTitle(album.title)
             }
