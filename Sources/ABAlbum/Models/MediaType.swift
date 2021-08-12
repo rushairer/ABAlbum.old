@@ -7,14 +7,14 @@
 
 import Foundation
 
-/// 媒体类型.
+/// The mediatype of assets.
 public enum MediaType: Int, CaseIterable {
-    /// 照片和视频
+    /// Both image and video.
     case both = 0
 
-    /// 仅照片
+    /// Image only.
     case image = 1
 
-    /// 仅视频
+    /// Video only.
     case video = 2
 }

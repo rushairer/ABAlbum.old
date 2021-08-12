@@ -19,7 +19,7 @@ import Photos
 ///  var body: some View {
 ///     AlbumPage()
 ///         .showsNoPermissionView($showsAlbumNoPermissionView)
-///         .albumFetchOptions(.collectionFetchOptions(with: .image))
+///         .albumFetchOptions(AlbumFetchOptions.fetchOptions(with: mediaType))
 ///         .task {
 ///             showsAlbumNoPermissionView = await !AlbumAuthorizationStatus.hasAlbumPermission
 ///         }

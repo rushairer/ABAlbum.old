@@ -9,8 +9,8 @@ import Foundation
 import Photos
 
 /// 相册的错误类型
-public enum AlbumError: Error, Identifiable {
-    public var id: String { localizedDescription }
+enum AlbumError: Error, Identifiable {
+    var id: String { localizedDescription }
     
     /// 未知错误
     case unknown
