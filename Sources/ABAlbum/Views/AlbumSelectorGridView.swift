@@ -43,18 +43,18 @@ struct AlbumSelectorGridView: View {
                                  spacing: gridSpacing)
                     ]) {
                         ForEach(allAlbums, id: \.id) { album in
-                            //if album.assetsResult?.firstObject != nil {
-                                AlbumSelectorGridCellView(asset: album.assetsResult!.firstObject!,
+                            if album.assets?.first != nil {
+                                AlbumSelectorGridCellView(asset: album.assets!.first!,
                                                           size: size,
                                                           thumbnailSize: thumbnailSize,
                                                           title: album.title,
-                                                          count: album.assetsResult?.count)
+                                                          count: album.assets?.count)
                                     .onTapGesture {
                                         albumViewModel.currentAlbum = album
                                         showsGridCellView = true
                                     }
                                     .frame(width: size.width, height: size.width)
-                            //}
+                            }
                         }
                     }
                 }

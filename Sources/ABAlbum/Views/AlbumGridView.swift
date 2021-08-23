@@ -13,6 +13,7 @@ struct AlbumGridView: View {
     @Environment(\.albumViewModel) var albumViewModel: AlbumViewModel
     
     @State private var album: Album?
+
     @State private var showsPreviwView: Bool = false
     
     private let maxColumn: Int = 4
@@ -35,12 +36,12 @@ struct AlbumGridView: View {
                         LazyVGrid(columns: [
                             GridItem(.adaptive(minimum: size.width, maximum: size.width), spacing: gridSpacing)
                         ]) {
-                            if album != nil && album?.assetsResult != nil {
-                                ForEach(0..<(album?.assetsResult?.count ?? 0)) { index in
+                            if album?.assets != nil && album!.assets!.count > 0 {
+                                ForEach(album!.assets!, id: \.localIdentifier) { asset in
                                     /// 防止循环引用
-                                    let localIdentifier: String = album!.assetsResult!.object(at: index).localIdentifier
+                                    let localIdentifier: String = asset.localIdentifier
                                     GeometryReader { proxy in
-                                        AlbumGridCellView(asset: album!.assetsResult!.object(at: index),
+                                        AlbumGridCellView(asset: asset,
                                                           size: size,
                                                           thumbnailSize: thumbnailSize,
                                                           requestOptions: ImageFetchOptions.fetchOptions())
@@ -62,7 +63,9 @@ struct AlbumGridView: View {
                     scrollViewProxy.scrollTo(currentAssetLocalIdentifier)
                 }
                 .onReceive(albumViewModel.$currentAlbum) { currentAlbum in
-                    album = currentAlbum
+                    withAnimation {
+                        album = currentAlbum
+                    }
                 }
                 .navigationTitle(album?.title ?? "Untitled")
             }

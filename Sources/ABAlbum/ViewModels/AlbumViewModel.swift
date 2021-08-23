@@ -29,9 +29,14 @@ class AlbumViewModel: ObservableObject {
             let subscriber = AnySubscriber<PHChange, Never> { subscription in
                 subscription.request(.unlimited)
             } receiveValue: { [unowned self] change in
-                guard currentAlbum != nil else { return .none }
+                guard currentAlbum != nil else {
+                    refreshAlbums()
+                    return .none
+                }
                 if let changeDetails = change.changeDetails(for: currentAlbum!.assetsResult!) {
                     currentAlbum?.assetsResult = changeDetails.fetchResultAfterChanges
+                    
+                    currentAlbum?.asyncAssets()
                 }
 
                 allAlbums = allAlbums?.map({ album in
@@ -88,6 +93,13 @@ extension AlbumViewModel {
     func requestAlbums(with albumFetchOptions: AlbumFetchOptions?) {
         self.albumFetchOptions = albumFetchOptions
         allAlbums = AlbumService.allAlbums(with: albumFetchOptions)
+    }
+    
+    func refreshAlbums() {
+        let currentAlbumLocalIdentifier = currentAlbum?.localIdentifier
+        allAlbums?.removeAll()
+        requestAlbums(with: albumFetchOptions)
+        currentAlbum = allAlbums?.first(where: { $0.localIdentifier == currentAlbumLocalIdentifier })
     }
     
     func clearAlbum() {

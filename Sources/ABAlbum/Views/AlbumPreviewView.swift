@@ -78,7 +78,7 @@ struct AlbumPreviewView: View {
         ZStack(alignment: .bottom) {
             GeometryReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
-                    if album != nil && album?.assetsResult != nil {
+                    if album?.assets != nil && album!.assets!.count > 0 {
                         let localIdentifier = album?.localIdentifier
                         /// @Environment unlike @StateObject, can not using $albumViewModel.$currentAssetLocalIdentifier.
                         TabView(selection: .init(get: {
@@ -87,14 +87,13 @@ struct AlbumPreviewView: View {
                             albumViewModel.currentAssetLocalIdentifier = id
                         })) {
                             
-                            ForEach(0..<(album?.assetsResult?.count ?? 0)) { index in
+                            ForEach(album!.assets!, id: \.localIdentifier) { asset in
                                 /// 防止循环引用
-                                let localIdentifier = album!.assetsResult!.object(at: index).localIdentifier
-                                AlbumPreviewCellView(asset: album!.assetsResult!.object(at: index))
+                                let localIdentifier = asset.localIdentifier
+                                AlbumPreviewCellView(asset: asset)
                                     .padding(.trailing, 6)
                                     .tag(localIdentifier)
                             }
-                            
                         }
                         .frame(width: proxy.size.width, height: proxy.size.height)
                         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
@@ -103,7 +102,9 @@ struct AlbumPreviewView: View {
                     }
                 }
                 .onReceive(albumViewModel.$currentAlbum) { currentAlbum in
-                    album = currentAlbum
+                    withAnimation {
+                        album = currentAlbum
+                    }
                 }
             }
             .ignoresSafeArea()
