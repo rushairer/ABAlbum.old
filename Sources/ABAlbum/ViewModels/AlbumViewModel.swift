@@ -16,30 +16,39 @@ class AlbumViewModel: ObservableObject {
     
     @Published var currentAlbum: Album?
     
-    @Published var albumChange: AlbumChange = AlbumChange() {
-        didSet {
-            guard albumChange.changeInstance != nil else { return }
-            refreshAlbums()
-        }
-    }
+    @Published var albumChange: AlbumChange = AlbumChange()
     
     var albumFetchOptions: AlbumFetchOptions?
     
     var changedObserver: AlbumChangeObserver?
+    
+    var cancellables = Set<AnyCancellable>()
     
     var albumChangeSubscriber: AnySubscriber<PHChange, Never> {
         get {
             let subscriber = AnySubscriber<PHChange, Never> { subscription in
                 subscription.request(.unlimited)
             } receiveValue: { [unowned self] change in
-                self.albumChange.changeInstance = change
+                guard currentAlbum != nil else { return .none }
+                if let changeDetails = change.changeDetails(for: currentAlbum!.assetsResult!) {
+                    currentAlbum?.assetsResult = changeDetails.fetchResultAfterChanges
+                }
+
+                allAlbums = allAlbums?.map({ album in
+                    if album.localIdentifier == currentAlbum?.localIdentifier {
+                        return currentAlbum!
+                    } else {
+                        return album
+                    }
+                })
+                
                 return .none
             } receiveCompletion: { completion in
             }
             return subscriber
         }
     }
-
+    
     init() {
         changedObserver = AlbumChangeObserver(subscriber: albumChangeSubscriber)
         if changedObserver != nil {
@@ -61,7 +70,7 @@ extension AlbumViewModel {
     
     class AlbumChangeObserver: NSObject, PHPhotoLibraryChangeObserver {
         var subscriber: AnySubscriber<PHChange, Never>
-
+        
         init(subscriber: AnySubscriber<PHChange, Never>) {
             self.subscriber = subscriber
             super.init()
@@ -79,13 +88,6 @@ extension AlbumViewModel {
     func requestAlbums(with albumFetchOptions: AlbumFetchOptions?) {
         self.albumFetchOptions = albumFetchOptions
         allAlbums = AlbumService.allAlbums(with: albumFetchOptions)
-    }
-    
-    func refreshAlbums() {
-        let currentAlbumLocalIdentifier = currentAlbum?.localIdentifier
-        allAlbums?.removeAll()
-        requestAlbums(with: albumFetchOptions)
-        currentAlbum = allAlbums?.first(where: { $0.localIdentifier == currentAlbumLocalIdentifier })
     }
     
     func clearAlbum() {

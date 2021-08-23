@@ -93,14 +93,13 @@ struct AlbumPreviewView: View {
                                 AlbumPreviewCellView(asset: album!.assetsResult!.object(at: index))
                                     .padding(.trailing, 6)
                                     .tag(localIdentifier)
-                                    .id(localIdentifier)
                             }
                             
                         }
                         .frame(width: proxy.size.width, height: proxy.size.height)
                         .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
                         .offset(x: 3, y: 0)
-                        .id("\(String(describing: localIdentifier))_\(album?.assetsResult?.count)")
+                        .id(localIdentifier)
                     }
                 }
                 .onReceive(albumViewModel.$currentAlbum) { currentAlbum in

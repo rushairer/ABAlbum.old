@@ -42,9 +42,8 @@ struct AlbumSelectorGridView: View {
                                            maximum: size.width),
                                  spacing: gridSpacing)
                     ]) {
-                        ForEach(allAlbums, id: \.localIdentifier) { album in
-                            if album.assetsResult?.firstObject != nil {
-                                let localIdentifier = album.assetsResult!.firstObject!.localIdentifier
+                        ForEach(allAlbums, id: \.id) { album in
+                            //if album.assetsResult?.firstObject != nil {
                                 AlbumSelectorGridCellView(asset: album.assetsResult!.firstObject!,
                                                           size: size,
                                                           thumbnailSize: thumbnailSize,
@@ -55,8 +54,7 @@ struct AlbumSelectorGridView: View {
                                         showsGridCellView = true
                                     }
                                     .frame(width: size.width, height: size.width)
-                                    .id(localIdentifier) /// 设置id可以强制刷新Cell
-                            }
+                            //}
                         }
                     }
                 }

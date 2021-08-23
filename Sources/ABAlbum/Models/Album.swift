@@ -8,7 +8,13 @@
 import Foundation
 import Photos
 
-struct Album {
+struct Album: Identifiable {
+    var id: String {
+        get {
+            return "\(String(describing: assetCollection.localIdentifier))_\(String(describing: assetsResult?.firstObject?.localIdentifier))"
+        }
+    }
+    
     var assetCollection: PHAssetCollection
     
     var title: String {
