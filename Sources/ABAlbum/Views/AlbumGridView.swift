@@ -12,8 +12,8 @@ struct AlbumGridView: View {
     
     @Environment(\.albumViewModel) var albumViewModel: AlbumViewModel
     
-    @State var album: Album
-    @State var showsPreviwView: Bool = false
+    @State private var album: Album?
+    @State private var showsPreviwView: Bool = false
     
     private let maxColumn: Int = 4
     private let gridSpacing: CGFloat = 8
@@ -27,7 +27,7 @@ struct AlbumGridView: View {
                 ZStack(alignment: .topLeading) {
                     NavigationLink(isActive: $showsPreviwView,
                                    destination: {
-                        AlbumPreviewView(album: album)
+                        AlbumPreviewView()
                     }) {
                         EmptyView()
                     }
@@ -35,21 +35,23 @@ struct AlbumGridView: View {
                         LazyVGrid(columns: [
                             GridItem(.adaptive(minimum: size.width, maximum: size.width), spacing: gridSpacing)
                         ]) {
-                            ForEach(0..<(album.assetsResult?.count ?? 0)) { index in
-                                /// 防止循环引用
-                                let localIdentifier: String = album.assetsResult!.object(at: index).localIdentifier
-                                GeometryReader { proxy in
-                                    AlbumGridCellView(asset: album.assetsResult!.object(at: index),
-                                                      size: size,
-                                                      thumbnailSize: thumbnailSize,
-                                                      requestOptions: ImageFetchOptions.fetchOptions())
-                                        .onTapGesture {
-                                            albumViewModel.currentAssetLocalIdentifier = localIdentifier
-                                            showsPreviwView = true
-                                        }
+                            if album != nil && album?.assetsResult != nil {
+                                ForEach(0..<(album?.assetsResult?.count ?? 0)) { index in
+                                    /// 防止循环引用
+                                    let localIdentifier: String = album!.assetsResult!.object(at: index).localIdentifier
+                                    GeometryReader { proxy in
+                                        AlbumGridCellView(asset: album!.assetsResult!.object(at: index),
+                                                          size: size,
+                                                          thumbnailSize: thumbnailSize,
+                                                          requestOptions: ImageFetchOptions.fetchOptions())
+                                            .onTapGesture {
+                                                albumViewModel.currentAssetLocalIdentifier = localIdentifier
+                                                showsPreviwView = true
+                                            }
+                                    }
+                                    .frame(width: size.width, height: size.width)
+                                    .id(localIdentifier)
                                 }
-                                .frame(width: size.width, height: size.width)
-                                .id(localIdentifier)
                             }
                         }
                     }
@@ -59,7 +61,10 @@ struct AlbumGridView: View {
                     guard let currentAssetLocalIdentifier = currentAssetLocalIdentifier else { return }
                     scrollViewProxy.scrollTo(currentAssetLocalIdentifier)
                 }
-                .navigationTitle(album.title)
+                .onReceive(albumViewModel.$currentAlbum) { currentAlbum in
+                    album = currentAlbum
+                }
+                .navigationTitle(album?.title ?? "Untitled")
             }
         }
         return GeometryReader(content: internalView(geometryProxy:))
@@ -68,6 +73,6 @@ struct AlbumGridView: View {
 
 struct AlbumGridView_Previews: PreviewProvider {
     static var previews: some View {
-        AlbumGridView(album: Album(assetCollection: PHAssetCollection()))
+        AlbumGridView()
     }
 }

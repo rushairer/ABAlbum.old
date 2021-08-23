@@ -25,7 +25,15 @@ struct Album {
     
     var assetsResult: PHFetchResult<PHAsset>?
     
-    mutating func fetchAssets(with fetchOptions: PHFetchOptions?) {
-        assetsResult = PHAsset.fetchAssets(in: assetCollection, options: fetchOptions)
+    mutating func fetchAssets(with fetchOptions: AlbumFetchOptions?) {
+        assetsResult = PHAsset.fetchAssets(in: assetCollection, options: fetchOptions?.rawValue)
+    }
+}
+
+extension Album: Equatable {
+    public static func == (lhs: Album, rhs: Album) -> Bool {
+        return lhs.localIdentifier == rhs.localIdentifier &&
+        lhs.assetsResult == rhs.assetsResult &&
+        lhs.assetCollection == rhs.assetCollection
     }
 }

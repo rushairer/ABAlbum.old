@@ -19,7 +19,7 @@ import Photos
 ///  var body: some View {
 ///     AlbumPage()
 ///         .showsNoPermissionView($showsAlbumNoPermissionView)
-///         .albumFetchOptions(AlbumFetchOptions.fetchOptions(with: mediaType))
+///         .albumFetchOptions(.fetchOptions(with: mediaType))
 ///         .task {
 ///             showsAlbumNoPermissionView = await !AlbumAuthorizationStatus.hasAlbumPermission
 ///         }
@@ -28,33 +28,22 @@ import Photos
 /// ```
 public struct AlbumPage: View {
     
-    public init() {}
+    /// Shows album has no permission view or not.
+    @Binding public var showsAlbumNoPermissionView: Bool
+    
+    public init(showsAlbumNoPermissionView: Binding<Bool>) {
+        _showsAlbumNoPermissionView = showsAlbumNoPermissionView
+    }
     
     public var body: some View {
-        AlbumSelectorGridView()
-    }
-}
-
-extension AlbumPage {
-    
-    /// Show the NoPermissionView.
-    /// - Parameter showsAlbumNoPermissionView: Binding<Bool>
-    /// - Returns: AlbumPage
-    public func showsNoPermissionView(_ showsAlbumNoPermissionView: Binding<Bool>) -> some View {
-        self.modifier(ShowsNoPermissionView(showsAlbumNoPermissionView: showsAlbumNoPermissionView))
-    }
-    
-    struct ShowsNoPermissionView: ViewModifier {
-        @Binding var showsAlbumNoPermissionView: Bool
-        
-        func body(content: Content) -> some View {
-            content
-                .overlay(
-                    AlbumNoPermissionView()
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(.background)
-                        .opacity(showsAlbumNoPermissionView ? 1 : 0)
-                )
+        /// First run the application, need refresh views when permission changed.
+        /// So we need if...else.
+        if showsAlbumNoPermissionView {
+            AlbumNoPermissionView()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(.background)
+        } else {
+            AlbumSelectorGridView()
         }
     }
 }
@@ -62,8 +51,8 @@ extension AlbumPage {
 struct AlbumPage_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            AlbumPage()
-            AlbumPage().showsNoPermissionView(.constant(true))
+            AlbumPage(showsAlbumNoPermissionView: .constant(true))
+            AlbumPage(showsAlbumNoPermissionView: .constant(false))
         }
     }
 }

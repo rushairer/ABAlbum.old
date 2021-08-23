@@ -8,33 +8,39 @@
 import SwiftUI
 import Photos
 
-/// Create the PHFetchOptions for Album.
+/// Create the AlbumFetchOptions for Album.
 ///
 /// ```swift
-/// AlbumPage()
-///     .showsNoPermissionView($showsAlbumNoPermissionView)
-///     .albumFetchOptions(AlbumFetchOptions.fetchOptions(with: .both)
+/// AlbumPage(showsAlbumNoPermissionView: $showsAlbumNoPermissionView)
+///     .albumFetchOptions(.fetchOptions(with: .both)
 /// ```
 public struct AlbumFetchOptions {
-    /// Create a PHFetchOptions
+    
+    /// The rawValue of AlbumFetchOptions.
+    public private(set) var rawValue: PHFetchOptions
+
+    /// Create a AlbumFetchOptions
     ///
-    /// Create a PHFetchOptions for albums with ``MediaType``.
+    /// Create a AlbumFetchOptions for albums with ``MediaType``.
     ///
     /// - Parameter mediaType: The ``MediaType`` of albums.
-    /// - Returns: A PHFetchOptions.
-    public static func fetchOptions(with mediaType: MediaType) -> PHFetchOptions {
+    /// - Returns: A AlbumFetchOptions.
+    public static func fetchOptions(with mediaType: MediaType? = .both) -> AlbumFetchOptions {
         let option = PHFetchOptions()
         option.sortDescriptors = [NSSortDescriptor(key: "creationDate", ascending: false)]
         
-        if mediaType.rawValue != PHAssetMediaType.unknown.rawValue {
+        if let mediaType = mediaType,
+           mediaType.rawValue != PHAssetMediaType.unknown.rawValue {
             option.predicate = NSPredicate(format: "mediaType == %ld", mediaType.rawValue)
         }
-        return option
+        
+        return AlbumFetchOptions(rawValue: option)
     }
+    
 }
 
 extension EnvironmentValues {
-    public var albumFetchOptions: PHFetchOptions {
+    public var albumFetchOptions: AlbumFetchOptions {
         get {
             return self[AlbumFetchOptionsKey.self]
         }
@@ -45,11 +51,11 @@ extension EnvironmentValues {
 }
 
 extension View {
-    public func albumFetchOptions(_ albumFetchOptions: PHFetchOptions) -> some View {
+    public func albumFetchOptions(_ albumFetchOptions: AlbumFetchOptions) -> some View {
         environment(\.albumFetchOptions, albumFetchOptions)
     }
 }
 
 private struct AlbumFetchOptionsKey: EnvironmentKey {
-    static let defaultValue: PHFetchOptions = AlbumFetchOptions.fetchOptions(with: .both)
+    static let defaultValue: AlbumFetchOptions = .fetchOptions(with: .both)
 }

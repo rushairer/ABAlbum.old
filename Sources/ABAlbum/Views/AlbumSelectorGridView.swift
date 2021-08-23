@@ -9,11 +9,11 @@ import SwiftUI
 import Photos
 
 struct AlbumSelectorGridView: View {
-    @Environment(\.albumFetchOptions) var albumFetchOptions: PHFetchOptions
-    
-    @StateObject var albumChangeViewModel: AlbumChangeViewModel = AlbumChangeViewModel()
+    @Environment(\.albumFetchOptions) var albumFetchOptions: AlbumFetchOptions
+    @Environment(\.albumViewModel) var albumViewModel: AlbumViewModel
     
     @State private var allAlbums: [Album] = []
+    @State private var showsGridCellView: Bool = false
     
     private let maxColumn: Int = 2
     private let gridSpacing: CGFloat = 8
@@ -29,20 +29,35 @@ struct AlbumSelectorGridView: View {
             @CellSize(number: maxColumn, spacing: gridSpacing) var size: CGSize = geometryProxy.size
             @ScreenScaledSize var thumbnailSize:CGSize = size
             
-            return ScrollView(.vertical) {
-                LazyVGrid(columns: [
-                    GridItem(.adaptive(minimum: size.width,
-                                       maximum: size.width),
-                             spacing: gridSpacing)
-                ]) {
-                    ForEach(allAlbums, id: \.localIdentifier) { album in
-                        NavigationLink(destination: AlbumGridView(album: album)) {
+            return ZStack {
+                NavigationLink(isActive: $showsGridCellView,
+                               destination: {
+                    AlbumGridView()
+                }) {
+                    EmptyView()
+                }
+                ScrollView(.vertical) {
+                    LazyVGrid(columns: [
+                        GridItem(.adaptive(minimum: size.width,
+                                           maximum: size.width),
+                                 spacing: gridSpacing)
+                    ]) {
+                        ForEach(allAlbums, id: \.localIdentifier) { album in
                             if album.assetsResult?.firstObject != nil {
-                                AlbumSelectorGridCellView(asset: album.assetsResult!.firstObject!, size: size, thumbnailSize: thumbnailSize, title: album.title, count: album.assetsResult?.count)
+                                let localIdentifier = album.assetsResult!.firstObject!.localIdentifier
+                                AlbumSelectorGridCellView(asset: album.assetsResult!.firstObject!,
+                                                          size: size,
+                                                          thumbnailSize: thumbnailSize,
+                                                          title: album.title,
+                                                          count: album.assetsResult?.count)
+                                    .onTapGesture {
+                                        albumViewModel.currentAlbum = album
+                                        showsGridCellView = true
+                                    }
                                     .frame(width: size.width, height: size.width)
+                                    .id(localIdentifier) /// 设置id可以强制刷新Cell
                             }
                         }
-                        .accentColor(Color(uiColor: .label))
                     }
                 }
             }
@@ -51,12 +66,11 @@ struct AlbumSelectorGridView: View {
         }
         
         return GeometryReader(content: internalView(geometryProxy:))
+            .onReceive(albumViewModel.$allAlbums) { albums in
+                allAlbums = albums ?? []
+            }
             .onAppear {
                 requestAlbums()
-            }
-            .onReceive(albumChangeViewModel.$albumChange) { albumChange in
-                guard albumChange.changeInstance != nil else { return }
-                refreshAlbums()
             }
             .onDisappear {
                 clearAlbum()
@@ -64,16 +78,11 @@ struct AlbumSelectorGridView: View {
     }
     
     func requestAlbums() {
-        allAlbums = AlbumService.allAlbums(with: albumFetchOptions)
-    }
-    
-    func refreshAlbums() {
-        allAlbums.removeAll()
-        requestAlbums()
+        albumViewModel.requestAlbums(with: albumFetchOptions)
     }
     
     func clearAlbum() {
-        allAlbums.removeAll()
+        albumViewModel.clearAlbum()
     }
 }
 

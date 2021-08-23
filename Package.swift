@@ -12,13 +12,15 @@ let package = Package(
             targets: ["ABAlbum"]),
     ],
     dependencies: [
-        .package(name: "ZoomableImageView", url: "https://github.com/rushairer/ZoomableImageView.git", from: "1.0.0")
+        .package(name: "ZoomableImageView", url: "https://github.com/rushairer/ZoomableImageView.git", from: "1.0.0"),
+        .package(name: "SwiftConcurrencyExtensions", path: "../SwiftConcurrencyExtensions")
     ],
     targets: [
         .target(
             name: "ABAlbum",
             dependencies: [
-                "ZoomableImageView"
+                "ZoomableImageView",
+                "SwiftConcurrencyExtensions"
             ]),
         .testTarget(
             name: "ABAlbumTests",

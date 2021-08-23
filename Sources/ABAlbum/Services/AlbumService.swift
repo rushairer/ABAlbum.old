@@ -7,6 +7,7 @@
 
 import SwiftUI
 import Photos
+import SwiftConcurrencyExtensions
 
 /// Get collections and assets.
 struct AlbumService {
@@ -27,7 +28,7 @@ struct AlbumService {
         PHPhotoLibrary.shared().unregisterChangeObserver(observer)
     }
     
-    static func allAlbums(with fetchOptions: PHFetchOptions) -> [Album] {
+    static func allAlbums(with fetchOptions: AlbumFetchOptions?) -> [Album] {
         guard AlbumAuthorizationStatus.isDetermined else {
             return []
         }
@@ -85,40 +86,19 @@ struct AlbumService {
                 continuation.finish(throwing: AlbumError.authorizationStatus(.notDetermined))
                 return
             }
-            
-            AlbumService.imageManager
-                .requestImage(for: asset, targetSize: size, contentMode: .aspectFill, options: requestOptions) { image, info  in
-                    guard let info = info, let image = image else { return }
-                    
-                    if let _ = info[PHImageErrorKey] {
-                        continuation.finish(throwing: AlbumError.requestImageFailed)
-                        return
-                    }
-                    
-                    if let _ = info[PHImageCancelledKey],
-                       info[PHImageCancelledKey] as! Bool {
-                        continuation.finish(throwing: AlbumError.isCancelled)
-                        return
-                    }
-                    
+            Task {
+                async let stream = AlbumService.imageManager.requestImage(for: asset, targetSize: size, contentMode: .aspectFill, options: requestOptions)
+
+                for await (image, info) in await stream {
+                    guard let image = image else { return }
                     continuation.yield(image)
                     
-                    if let _ = info[PHImageResultIsDegradedKey],
-                       !(info[PHImageResultIsDegradedKey] as! Bool) {
+                    if let _ = info?[PHImageResultIsDegradedKey],
+                       !(info?[PHImageResultIsDegradedKey] as! Bool) {
                         continuation.finish()
                     }
-                    
-                    continuation.onTermination = { @Sendable terminal in
-                        switch terminal {
-                        case .cancelled:
-                            let requestIDKey = info[PHImageResultRequestIDKey] as! PHImageRequestID
-                            DispatchQueue.global(qos: .userInteractive).async {
-                                AlbumService.imageManager.cancelImageRequest(requestIDKey)
-                            }
-                        default: break
-                        }
-                    }
                 }
+            }
         }
     }
 }

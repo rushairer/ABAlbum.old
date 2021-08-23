@@ -68,7 +68,7 @@ struct AlbumSelectorGridCellView: View {
 #endif
         }
         .task {
-            guard thumbnailImage == nil else { return }
+            //guard thumbnailImage == nil else { return }
             async let stream = AlbumService.asyncImage(from: asset, size: thumbnailSize, requestOptions: requestOptions)
             do {
                 for try await image in await stream {

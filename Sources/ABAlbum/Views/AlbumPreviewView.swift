@@ -7,12 +7,11 @@
 
 import SwiftUI
 import Photos
-import Combine
 
 struct AlbumPreviewView: View {
     @Environment(\.albumViewModel) var albumViewModel: AlbumViewModel
     
-    var album: Album
+    @State private var album: Album?
     
     var toolBar: some View {
         VStack {
@@ -22,7 +21,7 @@ struct AlbumPreviewView: View {
             Spacer()
             HStack {
                 Button {
-                    
+                    deleteButtonOnClicked()
                 } label: {
                     Image(systemName: "trash.fill")
                 }
@@ -49,7 +48,7 @@ struct AlbumPreviewView: View {
                 Spacer()
                 
                 Button {
-                    
+                    NotificationCenter.default.post(name: ABAlbum.actionButtonDidClickedNotification, object: albumViewModel.currentAssetLocalIdentifier)
                 } label: {
                     Image(systemName: "rectangle.portrait.and.arrow.right.fill")
                 }
@@ -79,23 +78,33 @@ struct AlbumPreviewView: View {
         ZStack(alignment: .bottom) {
             GeometryReader { proxy in
                 ScrollView(.horizontal, showsIndicators: false) {
-                    /// @Environment unlike @StateObject, can not using $albumViewModel.$currentAssetLocalIdentifier.
-                    TabView(selection: .init(get: {
-                        albumViewModel.currentAssetLocalIdentifier
-                    }, set: { id in
-                        albumViewModel.currentAssetLocalIdentifier = id
-                    })) {
-                        ForEach(0..<(album.assetsResult?.count ?? 0)) { index in
-                            /// 防止循环引用
-                            let localIdentifier = album.assetsResult?.object(at: index).localIdentifier
-                            AlbumPreviewCellView(asset: album.assetsResult!.object(at: index))
-                                .padding(.trailing, 6)
-                                .tag(localIdentifier)
+                    if album != nil && album?.assetsResult != nil {
+                        let localIdentifier = album?.localIdentifier
+                        /// @Environment unlike @StateObject, can not using $albumViewModel.$currentAssetLocalIdentifier.
+                        TabView(selection: .init(get: {
+                            albumViewModel.currentAssetLocalIdentifier
+                        }, set: { id in
+                            albumViewModel.currentAssetLocalIdentifier = id
+                        })) {
+                            
+                            ForEach(0..<(album?.assetsResult?.count ?? 0)) { index in
+                                /// 防止循环引用
+                                let localIdentifier = album!.assetsResult!.object(at: index).localIdentifier
+                                AlbumPreviewCellView(asset: album!.assetsResult!.object(at: index))
+                                    .padding(.trailing, 6)
+                                    .tag(localIdentifier)
+                                    .id(localIdentifier)
+                            }
+                            
                         }
+                        .frame(width: proxy.size.width, height: proxy.size.height)
+                        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
+                        .offset(x: 3, y: 0)
+                        .id("\(String(describing: localIdentifier))_\(album?.assetsResult?.count)")
                     }
-                    .frame(width: proxy.size.width, height: proxy.size.height)
-                    .tabViewStyle(PageTabViewStyle(indexDisplayMode: .never))
-                    .offset(x: 3, y: 0)
+                }
+                .onReceive(albumViewModel.$currentAlbum) { currentAlbum in
+                    album = currentAlbum
                 }
             }
             .ignoresSafeArea()
@@ -103,10 +112,25 @@ struct AlbumPreviewView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
     }
+    
+    func deleteButtonOnClicked() {
+        guard let selectedAssetLocalIdentifier = albumViewModel.currentAssetLocalIdentifier else { return }
+        let asset = PHAsset.fetchAssets(withLocalIdentifiers: [selectedAssetLocalIdentifier], options: nil).firstObject
+        guard let asset = asset else { return }
+        
+        do {
+            try PHPhotoLibrary.shared().performChangesAndWait {
+                PHAssetChangeRequest.deleteAssets([asset] as NSFastEnumeration)
+            }
+        }
+        catch (let error) {
+            print(error)
+        }
+    }
 }
 
 struct AlbumPreviewView_Previews: PreviewProvider {
     static var previews: some View {
-        AlbumPreviewView(album: Album(assetCollection: PHAssetCollection()))
+        AlbumPreviewView()
     }
 }
