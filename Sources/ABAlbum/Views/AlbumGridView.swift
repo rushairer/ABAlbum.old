@@ -19,6 +19,12 @@ struct AlbumGridView: View {
     private let maxColumn: Int = 4
     private let gridSpacing: CGFloat = 8
     
+    var filteredAssetsResult: [PHAsset]? {
+        return album?.assets
+    }
+    @State private var assetsCache: [AnyHashable: UIImage?] = [:]
+
+    
     var body: some View {
         func internalView(geometryProxy: GeometryProxy) -> some View {
             @CellSize(number: maxColumn, spacing: gridSpacing) var size: CGSize = geometryProxy.size
@@ -44,7 +50,8 @@ struct AlbumGridView: View {
                                         AlbumGridCellView(asset: asset,
                                                           size: size,
                                                           thumbnailSize: thumbnailSize,
-                                                          requestOptions: ImageFetchOptions.fetchOptions())
+                                                          requestOptions: ImageFetchOptions.fetchOptions(),
+                                                          assetsCache: $assetsCache)
                                             .onTapGesture {
                                                 albumViewModel.currentAssetLocalIdentifier = localIdentifier
                                                 showsPreviwView = true
@@ -65,6 +72,22 @@ struct AlbumGridView: View {
                 .onReceive(albumViewModel.$currentAlbum) { currentAlbum in
                     withAnimation {
                         album = currentAlbum
+                    }
+                }
+                .onAppear {
+                    guard let filteredAssetsResult = filteredAssetsResult else { return }
+                    let size = CGSize(width: 10, height: 10)
+                    let option = PHImageRequestOptions()
+                    option.isNetworkAccessAllowed = true
+                    option.isSynchronous = true
+                    
+                    DispatchQueue.global().async {
+                        (PHCachingImageManager.default() as! PHCachingImageManager).startCachingImages(for: filteredAssetsResult, targetSize: size, contentMode: .aspectFill, options: option)
+                        filteredAssetsResult.forEach({ asset in
+                            (PHCachingImageManager.default() as! PHCachingImageManager).requestImage(for: asset, targetSize: size, contentMode: .aspectFill, options: option) { image, info in
+                                assetsCache[asset.localIdentifier] = image
+                            }
+                        })
                     }
                 }
                 .navigationTitle(album?.title ?? "Untitled")

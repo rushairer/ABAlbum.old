@@ -28,6 +28,9 @@ struct Album: Identifiable {
             return assetCollection.localIdentifier
         }
     }
+    
+    var fetchOptions: AlbumFetchOptions?
+    
     var assetsResult: PHFetchResult<PHAsset>?
         
     var assets: [PHAsset]?

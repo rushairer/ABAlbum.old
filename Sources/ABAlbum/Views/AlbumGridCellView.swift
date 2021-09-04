@@ -14,7 +14,8 @@ struct AlbumGridCellView: View {
     var size: CGSize
     var thumbnailSize: CGSize
     var requestOptions: PHImageRequestOptions?
-    
+    @Binding var assetsCache: [AnyHashable: UIImage?]
+
     @State private var thumbnailImage: UIImage?
     
 #if DEBUG
@@ -38,12 +39,14 @@ struct AlbumGridCellView: View {
 
     var body: some View {
         ZStack {
-            Image(uiImage: thumbnailImage ?? UIImage())
+            //Image(uiImage: thumbnailImage ?? UIImage())
+            Image(uiImage: (thumbnailImage ?? (assetsCache[asset.localIdentifier] ?? UIImage()))!)
+
                 .resizable()
                 .scaledToFill()
                 .frame(width: size.width, height: size.height)
                 .clipped()
-                .overlay(ProgressView().frame(width: size.width, height: size.height).background(Color(uiColor: .tertiarySystemGroupedBackground)).opacity(thumbnailImage == nil ? 1 : 0))
+//                .overlay(ProgressView().frame(width: size.width, height: size.height).background(Color(uiColor: .tertiarySystemGroupedBackground)).opacity(thumbnailImage == nil ? 1 : 0))
 #if DEBUG
             if errorMsg != nil {
                 Text("ERROR")
@@ -91,11 +94,11 @@ struct AlbumGridCellView: View {
 struct AlbumGridCellView_Previews: PreviewProvider {
     static var previews: some View {
         Group {
-            AlbumGridCellView(asset: PHAsset(), size: CGSize(width: 200, height: 200), thumbnailSize: CGSize.zero)
+            AlbumGridCellView(asset: PHAsset(), size: CGSize(width: 200, height: 200), thumbnailSize: CGSize.zero, assetsCache: .constant([:]))
                 .preferredColorScheme(.dark)
                 .previewLayout(.sizeThatFits)
                 .frame(width: 200, height: 200)
-            AlbumGridCellView(asset: PHAsset(), size: CGSize(width: 200, height: 200), thumbnailSize: CGSize.zero)
+            AlbumGridCellView(asset: PHAsset(), size: CGSize(width: 200, height: 200), thumbnailSize: CGSize.zero, assetsCache: .constant([:]))
                 .previewLayout(.sizeThatFits)
                 .frame(width: 200, height: 200)
         }
